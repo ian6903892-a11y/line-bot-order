@@ -18,7 +18,7 @@ from linebot.v3 import WebhookHandler
 from linebot.v3.exceptions import InvalidSignatureError
 from linebot.v3.messaging import (
     Configuration, ApiClient, MessagingApi,
-    ReplyMessageRequest, TextMessage,
+    ReplyMessageRequest, PushMessageRequest, TextMessage,
     TemplateMessage, ButtonsTemplate, URIAction
 )
 from linebot.v3.webhooks import MessageEvent, TextMessageContent
@@ -45,6 +45,7 @@ PRODUCTS = {
 # ── 狀態機（記錄每個用戶的對話進度）──────────────────────
 states = {}
 pending_orders = {}
+otp_store = {}   # {user_id: {'otp': str, 'expires': float, 'phone': str}}
 
 # ── Google 試算表 ─────────────────────────────────────
 SHEET_HEADERS = ['訂單編號', '時間', '用戶ID', '商品', 'Riot ID', '登入方式', '帳號', '密碼', '載具', '數量', '金額', '付款方式', '狀態']
@@ -221,6 +222,61 @@ def liff_page():
     liff_id = os.getenv('LIFF_ID', '')
     return render_template('liff.html', liff_id=liff_id)
 
+@app.route('/api/send_otp', methods=['POST'])
+def send_otp():
+    data    = request.get_json() or {}
+    user_id = data.get('userId', '').strip()
+    phone   = data.get('phone', '').strip()
+    import re
+    if not re.match(r'^09\d{8}$', phone):
+        return jsonify({'ok': False, 'msg': '請輸入正確手機號碼（09 開頭共 10 碼）'})
+    if not user_id or user_id == 'unknown':
+        return jsonify({'ok': False, 'msg': '請在 LINE App 內開啟此頁面'})
+    otp = str(random.randint(100000, 999999))
+    otp_store[user_id] = {'otp': otp, 'expires': time.time() + 300, 'phone': phone}
+    try:
+        with ApiClient(configuration) as api_client:
+            MessagingApi(api_client).push_message(
+                PushMessageRequest(
+                    to=user_id,
+                    messages=[TextMessage(
+                        text=f'【喵喵儲值】您的驗證碼為：{otp}\n5 分鐘內有效，請勿洩漏給他人。'
+                    )]
+                )
+            )
+        return jsonify({'ok': True})
+    except Exception as e:
+        print(f'OTP 發送失敗: {e}')
+        return jsonify({'ok': False, 'msg': '發送失敗，請確認已加入喵喵儲值為好友'})
+
+@app.route('/api/verify_otp', methods=['POST'])
+def verify_otp():
+    data    = request.get_json() or {}
+    user_id = data.get('userId', '').strip()
+    otp     = data.get('otp', '').strip()
+    record  = otp_store.get(user_id)
+    if not record:
+        return jsonify({'valid': False, 'msg': '請先發送驗證碼'})
+    if time.time() > record['expires']:
+        otp_store.pop(user_id, None)
+        return jsonify({'valid': False, 'msg': '驗證碼已過期，請重新發送'})
+    if otp != record['otp']:
+        return jsonify({'valid': False, 'msg': '驗證碼錯誤，請重新輸入'})
+    otp_store.pop(user_id, None)
+    return jsonify({'valid': True})
+
+@app.route('/api/check_discount', methods=['POST'])
+def check_discount():
+    data = request.get_json() or {}
+    code = data.get('code', '').strip().upper()
+    try:
+        codes = json.loads(os.getenv('DISCOUNT_CODES', '{}'))
+    except Exception:
+        codes = {}
+    if code in codes:
+        return jsonify({'valid': True, 'discount': int(codes[code])})
+    return jsonify({'valid': False, 'msg': '無效的優惠代碼'})
+
 @app.route('/api/verify_usdt', methods=['POST'])
 def verify_usdt():
     data     = request.get_json() or {}
@@ -232,11 +288,18 @@ def verify_usdt():
 
 @app.route('/api/liff_order', methods=['POST'])
 def liff_order():
-    data = request.get_json()
-    user_id  = data.get('userId') or 'unknown'
-    vp       = data.get('vp', 0)
-    price    = data.get('price', 0)
-    riot_id  = data.get('riotId', '')
+    data            = request.get_json() or {}
+    user_id         = data.get('userId') or 'unknown'
+    vp              = data.get('vp', 0)
+    base_price      = data.get('price', 0)
+    riot_id         = data.get('riotId', '')
+    payment_type    = data.get('paymentType', 'BANK')
+    discount_amount = int(data.get('discountAmount', 0))
+
+    cvs_fee    = 30 if payment_type == 'CVS' else 0
+    final_price = base_price - discount_amount + cvs_fee
+
+    pm_label = {'BANK': '銀行轉帳', 'CVS': '超商代碼', 'USDT': 'USDT'}.get(payment_type, payment_type)
 
     order_id = gen_order_id()
     order = {
@@ -249,33 +312,33 @@ def liff_order():
         'login_password': data.get('loginPassword', ''),
         'carrier':        data.get('carrier', ''),
         'quantity':       1,
-        'total':          price,
-        'payment_method': '銀行轉帳',
-        'payment_type':   'BANK',
+        'total':          final_price,
+        'payment_method': pm_label,
+        'payment_type':   payment_type,
+        'phone':          data.get('phone', ''),
+        'discount_code':  data.get('discountCode', ''),
+        'discount_amount': discount_amount,
     }
     pending_orders[order_id] = order
     save_order(order)
 
-    payment_type = data.get('paymentType', 'BANK')
-    order['payment_method'] = 'USDT' if payment_type == 'USDT' else '無卡存款'
-
-    resp = {'orderId': order_id, 'amount': price, 'paymentType': payment_type}
+    resp = {'orderId': order_id, 'amount': final_price, 'paymentType': payment_type}
 
     if payment_type == 'USDT':
         rate = float(os.getenv('USDT_RATE', '32'))
-        usdt_amount = round(price / rate, 2)
         resp.update({
-            'usdtNetwork': os.getenv('USDT_NETWORK', 'TRC20'),
+            'usdtNetwork': os.getenv('USDT_NETWORK', 'BEP20'),
             'usdtAddress': os.getenv('USDT_ADDRESS', ''),
-            'usdtAmount':  usdt_amount,
+            'usdtAmount':  round(final_price / rate, 2),
         })
+    elif payment_type == 'CVS':
+        resp['cvsNote'] = '代碼將透過 LINE 發送給您'
     else:
         resp.update({
             'bankName':    os.getenv('BANK_NAME', '將來銀行'),
             'bankCode':    os.getenv('BANK_CODE', '823'),
             'bankAccount': os.getenv('BANK_ACCOUNT', ''),
         })
-
     return jsonify(resp)
 
 # ── LINE Bot 回覆 ─────────────────────────────────────

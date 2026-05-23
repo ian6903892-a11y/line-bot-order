@@ -7,292 +7,159 @@
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #f5f5f5;
-      color: #333;
-      min-height: 100vh;
-    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #333; min-height: 100vh; }
 
-    .header {
-      background: #fff;
-      padding: 14px 16px;
-      text-align: center;
-      border-bottom: 1px solid #eee;
-    }
+    /* Header */
+    .header { background: #fff; padding: 12px 16px; text-align: center; border-bottom: 1px solid #eee; }
     .header h1 { font-size: 15px; font-weight: 700; }
+    .header-sub { font-size: 10px; color: #bbb; margin-top: 2px; }
 
-    .steps {
-      display: flex;
-      align-items: center;
-      padding: 10px 16px;
-      background: #fff;
-      border-bottom: 1px solid #eee;
-    }
-    .step {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      flex: 1;
-      position: relative;
-    }
-    .step:not(:last-child)::after {
-      content: '';
-      position: absolute;
-      top: 13px;
-      left: 55%; right: -45%;
-      height: 2px;
-      background: #e0e0e0;
-      z-index: 0;
-    }
+    /* Steps - 5 circles */
+    .steps { display: flex; align-items: center; padding: 10px 8px; background: #fff; border-bottom: 1px solid #eee; }
+    .step { display: flex; flex-direction: column; align-items: center; flex: 1; position: relative; }
+    .step:not(:last-child)::after { content: ''; position: absolute; top: 12px; left: 55%; right: -45%; height: 2px; background: #e0e0e0; z-index: 0; }
     .step.done:not(:last-child)::after { background: #FF7043; }
-    .step-num {
-      width: 26px; height: 26px;
-      border-radius: 50%;
-      background: #e0e0e0;
-      color: #999;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 12px; font-weight: 700;
-      position: relative; z-index: 1;
-      transition: all 0.3s;
-    }
-    .step.active .step-num,
-    .step.done .step-num { background: #FF7043; color: #fff; }
-    .step-label { font-size: 10px; color: #aaa; margin-top: 3px; }
-    .step.active .step-label,
-    .step.done .step-label { color: #FF7043; font-weight: 600; }
+    .step-num { width: 24px; height: 24px; border-radius: 50%; background: #e0e0e0; color: #999; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; position: relative; z-index: 1; transition: all 0.3s; }
+    .step.active .step-num, .step.done .step-num { background: #FF7043; color: #fff; }
+    .step-label { font-size: 9px; color: #bbb; margin-top: 3px; }
+    .step.active .step-label, .step.done .step-label { color: #FF7043; font-weight: 700; }
 
-    .content { padding: 16px; padding-bottom: 96px; }
+    /* Order summary strip */
+    .order-summary { background: #fff; padding: 10px 16px; border-bottom: 1px solid #eee; display: none; align-items: center; justify-content: space-between; }
+    .order-summary.show { display: flex; }
+    .order-thumb { width: 34px; height: 34px; background: linear-gradient(135deg, #1a0a2e, #FF4655); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+    .order-info { margin-left: 10px; }
+    .order-name { font-size: 13px; font-weight: 700; }
+    .order-qty { font-size: 11px; color: #999; }
+    .order-price { font-size: 16px; font-weight: 800; color: #FF7043; }
 
-    /* Valorant Banner */
-    .game-banner {
-      background: linear-gradient(160deg, #1a0a2e 0%, #0d1117 60%, #200010 100%);
-      border-radius: 16px;
-      padding: 28px 20px 24px;
-      margin-bottom: 20px;
-      color: #fff;
-      position: relative;
-      overflow: hidden;
-    }
-    .game-banner::before {
-      content: '';
-      position: absolute;
-      top: -20px; right: -20px;
-      width: 120px; height: 120px;
-      background: radial-gradient(circle, rgba(255,70,85,0.3) 0%, transparent 70%);
-    }
-    .game-badge {
-      background: rgba(255,70,85,0.9);
-      color: #fff;
-      font-size: 10px; font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 4px;
-      display: inline-block;
-      margin-bottom: 10px;
-      letter-spacing: 1px;
-    }
+    .content { padding: 16px; padding-bottom: 100px; }
+
+    /* Game card */
+    .game-banner { background: linear-gradient(160deg, #1a0a2e 0%, #0d1117 60%, #200010 100%); border-radius: 16px; padding: 28px 20px 24px; margin-bottom: 20px; color: #fff; position: relative; overflow: hidden; cursor: pointer; transition: opacity 0.15s; -webkit-tap-highlight-color: transparent; }
+    .game-banner:active { opacity: 0.8; }
+    .game-banner::before { content: ''; position: absolute; top: -20px; right: -20px; width: 120px; height: 120px; background: radial-gradient(circle, rgba(255,70,85,0.3) 0%, transparent 70%); }
+    .game-badge { background: rgba(255,70,85,0.9); color: #fff; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 4px; display: inline-block; margin-bottom: 10px; letter-spacing: 1px; }
     .game-name { font-size: 26px; font-weight: 900; letter-spacing: 3px; }
     .game-sub { font-size: 12px; color: rgba(255,255,255,0.55); margin-top: 4px; }
-    .vp-icon {
-      position: absolute;
-      right: 20px; top: 50%; transform: translateY(-50%);
-      font-size: 52px; opacity: 0.4;
-    }
+    .vp-icon { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); font-size: 52px; opacity: 0.4; }
+    .game-tap { margin-top: 14px; font-size: 11px; color: rgba(255,255,255,0.45); }
 
     /* Denominations */
-    .section-title {
-      font-size: 12px; font-weight: 700; color: #888;
-      text-transform: uppercase; letter-spacing: 1px;
-      margin-bottom: 12px;
-    }
-    .denom-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-      margin-bottom: 4px;
-    }
-    .denom-card {
-      background: #fff;
-      border: 2px solid #eee;
-      border-radius: 14px;
-      padding: 14px 12px 12px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.15s;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .denom-card.selected {
-      border-color: #FF4655;
-      background: linear-gradient(160deg, #fff5f5 0%, #fff 100%);
-      box-shadow: 0 2px 12px rgba(255,70,85,0.2);
-    }
-    .denom-badge {
-      display: inline-block;
-      background: linear-gradient(90deg, #FF4655, #FF7043);
-      color: #fff;
-      font-size: 8px; font-weight: 900;
-      letter-spacing: 1.5px;
-      padding: 2px 7px;
-      border-radius: 4px;
-      margin-bottom: 8px;
-    }
+    .section-title { font-size: 12px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+    .denom-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .denom-card { background: #fff; border: 2px solid #eee; border-radius: 14px; padding: 14px 12px 12px; text-align: center; cursor: pointer; transition: all 0.15s; -webkit-tap-highlight-color: transparent; }
+    .denom-card.selected { border-color: #FF4655; background: linear-gradient(160deg,#fff5f5,#fff); box-shadow: 0 2px 12px rgba(255,70,85,0.2); }
+    .denom-badge { display: inline-block; background: linear-gradient(90deg,#FF4655,#FF7043); color: #fff; font-size: 8px; font-weight: 900; letter-spacing: 1.5px; padding: 2px 7px; border-radius: 4px; margin-bottom: 8px; }
     .denom-vp { font-size: 22px; font-weight: 800; color: #222; line-height: 1; }
     .denom-vp-unit { font-size: 11px; color: #aaa; margin: 4px 0 10px; }
     .denom-price { font-size: 16px; font-weight: 700; color: #FF7043; }
 
-    /* Payment method */
-    .pay-grid { display: flex; gap: 10px; margin-bottom: 4px; }
-    .pay-card {
-      flex: 1;
-      background: #fff;
-      border: 2px solid #eee;
-      border-radius: 14px;
-      padding: 16px 8px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.15s;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .pay-card.selected { border-color: #FF7043; background: #FFF5F2; }
-    .pay-icon { font-size: 28px; margin-bottom: 6px; }
-    .pay-name { font-size: 13px; font-weight: 700; color: #333; }
-    .pay-desc { font-size: 10px; color: #aaa; margin-top: 3px; }
+    /* Login grid */
+    .login-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .login-card { background: #fff; border: 2px solid #eee; border-radius: 14px; padding: 14px 8px; text-align: center; cursor: pointer; transition: all 0.15s; -webkit-tap-highlight-color: transparent; }
+    .login-card.selected { border-color: #FF7043; background: #FFF5F2; }
+    .login-icon { font-size: 28px; margin-bottom: 5px; }
+    .login-name { font-size: 13px; font-weight: 700; }
+    .cred-box { background: #fff; border: 1.5px solid #FF7043; border-radius: 14px; padding: 16px; margin-top: 6px; }
+    .cred-box .form-group:last-child { margin-bottom: 0; }
 
     /* Form */
     .form-group { margin-bottom: 18px; }
-    .form-label {
-      font-size: 12px; font-weight: 700; color: #666;
-      text-transform: uppercase; letter-spacing: 0.5px;
-      margin-bottom: 8px; display: block;
-    }
-    .form-input {
-      width: 100%;
-      padding: 14px 16px;
-      border: 2px solid #eee;
-      border-radius: 12px;
-      font-size: 16px;
-      outline: none;
-      background: #fff;
-      transition: border-color 0.2s;
-      -webkit-appearance: none;
-    }
+    .form-label { font-size: 12px; font-weight: 700; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: block; }
+    .form-input { width: 100%; padding: 14px 16px; border: 2px solid #eee; border-radius: 12px; font-size: 16px; outline: none; background: #fff; transition: border-color 0.2s; -webkit-appearance: none; }
     .form-input:focus { border-color: #FF7043; }
+    .form-input.valid { border-color: #4CAF50; }
+    .form-input.error { border-color: #FF4655; }
     .form-hint { font-size: 11px; color: #aaa; margin-top: 6px; line-height: 1.5; }
+    .form-hint.ok  { color: #4CAF50; }
+    .form-hint.err { color: #FF4655; }
 
-    /* Payment selection */
-    /* Login method */
-    .login-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-      margin-bottom: 4px;
-    }
-    .login-card {
-      background: #fff;
-      border: 2px solid #eee;
-      border-radius: 14px;
-      padding: 14px 8px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.15s;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .login-card.selected { border-color: #FF7043; background: #FFF5F2; box-shadow: 0 2px 10px rgba(255,112,67,0.2); }
-    .login-icon { font-size: 28px; margin-bottom: 5px; }
-    .login-name { font-size: 13px; font-weight: 700; color: #333; }
-    .cred-box {
-      background: #fff;
-      border: 1.5px solid #FF7043;
-      border-radius: 14px;
-      padding: 16px;
-      margin-top: 4px;
-      margin-bottom: 4px;
-    }
-    .cred-box .form-group:last-child { margin-bottom: 0; }
+    /* Phone OTP row */
+    .input-btn-row { display: flex; gap: 8px; }
+    .input-btn-row .form-input { flex: 1; min-width: 0; }
+    .btn-action { flex-shrink: 0; padding: 0 14px; height: 52px; background: #FF7043; color: #fff; border: none; border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; -webkit-tap-highlight-color: transparent; }
+    .btn-action:disabled { background: #ccc; cursor: default; }
+    .btn-action.green { background: #4CAF50; }
 
-    /* Confirm */
-    .confirm-card {
-      background: #fff;
-      border-radius: 16px;
-      overflow: hidden;
-      margin-bottom: 16px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    }
-    .confirm-header {
-      background: linear-gradient(90deg, #FF7043, #FF4655);
-      padding: 14px 20px;
-      color: #fff;
-      font-size: 14px; font-weight: 700;
-    }
-    .confirm-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 13px 20px;
-      border-bottom: 1px solid #f5f5f5;
-    }
+    /* Payment method list */
+    .pay-list { display: flex; flex-direction: column; gap: 10px; }
+    .pay-item { background: #fff; border: 2px solid #eee; border-radius: 14px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.15s; -webkit-tap-highlight-color: transparent; }
+    .pay-item.selected { border-color: #FF7043; background: #FFF9F7; }
+    .pay-radio { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
+    .pay-item.selected .pay-radio { border-color: #FF7043; background: #FF7043; }
+    .pay-item.selected .pay-radio::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #fff; display: block; }
+    .pay-item-icon { font-size: 24px; flex-shrink: 0; }
+    .pay-body { flex: 1; }
+    .pay-title { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .pay-tag { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: #FFF0EB; color: #FF7043; }
+    .pay-tag.gray { background: #f5f5f5; color: #999; }
+    .pay-desc { font-size: 11px; color: #999; margin-top: 3px; }
+
+    /* Discount */
+    .discount-row { display: flex; gap: 8px; }
+    .discount-row .form-input { flex: 1; }
+    .btn-use { flex-shrink: 0; padding: 0 18px; height: 52px; background: #FF7043; color: #fff; border: none; border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .btn-use:disabled { background: #ccc; }
+
+    /* Confirm card */
+    .confirm-card { background: #fff; border-radius: 16px; overflow: hidden; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .confirm-header { background: linear-gradient(90deg,#FF7043,#FF4655); padding: 14px 20px; color: #fff; font-size: 14px; font-weight: 700; }
+    .confirm-row { display: flex; justify-content: space-between; align-items: center; padding: 13px 20px; border-bottom: 1px solid #f5f5f5; }
     .confirm-row:last-child { border-bottom: none; }
-    .confirm-label { font-size: 13px; color: #999; }
-    .confirm-value { font-size: 13px; font-weight: 600; color: #333; max-width: 58%; text-align: right; word-break: break-all; }
+    .confirm-label { font-size: 13px; color: #999; flex-shrink: 0; }
+    .confirm-value { font-size: 13px; font-weight: 600; color: #333; max-width: 60%; text-align: right; word-break: break-all; }
     .confirm-total { background: #FFF5F2; }
     .confirm-total .confirm-value { font-size: 22px; color: #FF7043; }
 
-    .note-box {
-      background: #fff8e1;
-      border-left: 4px solid #FFB300;
-      border-radius: 8px;
-      padding: 12px 14px;
-      font-size: 12px; color: #7a5c00;
-      line-height: 1.6;
-    }
+    .note-box { background: #fff8e1; border-left: 4px solid #FFB300; border-radius: 8px; padding: 12px 14px; font-size: 12px; color: #7a5c00; line-height: 1.6; margin-bottom: 12px; }
 
-    /* Bottom button */
-    .bottom-btn {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      padding: 12px 16px 16px;
-      background: #fff;
-      border-top: 1px solid #eee;
-      z-index: 100;
-    }
-    .btn-primary {
-      width: 100%;
-      padding: 16px;
-      background: linear-gradient(90deg, #FF7043, #FF4655);
-      color: #fff;
-      border: none;
-      border-radius: 12px;
-      font-size: 16px; font-weight: 700;
-      cursor: pointer;
-      letter-spacing: 1px;
-      -webkit-tap-highlight-color: transparent;
-    }
+    /* Bottom bar */
+    .bottom-btn { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid #eee; z-index: 100; }
+    .bottom-simple { padding: 12px 16px 16px; }
+    .bottom-total { padding: 10px 16px 14px; display: flex; align-items: center; justify-content: space-between; }
+    .total-left .lbl { font-size: 12px; color: #999; }
+    .total-left .amt { font-size: 24px; font-weight: 900; color: #FF7043; margin-top: 1px; }
+    .total-actions { display: flex; gap: 10px; align-items: center; }
+    .btn-back { width: 44px; height: 44px; border-radius: 50%; background: #f5f5f5; border: none; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .btn-primary { width: 100%; padding: 16px; background: linear-gradient(90deg,#FF7043,#FF4655); color: #fff; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; letter-spacing: 1px; -webkit-tap-highlight-color: transparent; }
     .btn-primary:disabled { background: #ccc; cursor: default; }
-
-    /* Success */
-    .success-wrap { text-align: center; padding: 50px 24px; }
-    .success-icon { font-size: 80px; margin-bottom: 20px; }
-    .success-title { font-size: 22px; font-weight: 800; color: #333; margin-bottom: 10px; }
-    .success-sub { font-size: 14px; color: #888; line-height: 1.8; }
+    .btn-submit { padding: 12px 24px; background: linear-gradient(90deg,#FF7043,#FF4655); color: #fff; border: none; border-radius: 50px; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; -webkit-tap-highlight-color: transparent; }
+    .btn-submit:disabled { background: #ccc; }
   </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>🐱 喵喵儲值｜快速下單</h1>
+  <h1>🐱 喵喵儲值｜快速下單系統</h1>
+  <div class="header-sub">meowouo.up.railway.app</div>
 </div>
 
 <div class="steps">
-  <div class="step active" id="s1"><div class="step-num">1</div><div class="step-label">選面額</div></div>
-  <div class="step" id="s2"><div class="step-num">2</div><div class="step-label">帳號資料</div></div>
-  <div class="step" id="s3"><div class="step-num">3</div><div class="step-label">確認</div></div>
-  <div class="step" id="s4"><div class="step-num">4</div><div class="step-label">付款</div></div>
+  <div class="step active" id="s1"><div class="step-num">1</div><div class="step-label">選遊戲</div></div>
+  <div class="step" id="s2"><div class="step-num">2</div><div class="step-label">選面額</div></div>
+  <div class="step" id="s3"><div class="step-num">3</div><div class="step-label">填資料</div></div>
+  <div class="step" id="s4"><div class="step-num">4</div><div class="step-label">確認</div></div>
+  <div class="step" id="s5"><div class="step-num">5</div><div class="step-label">完成</div></div>
+</div>
+
+<div class="order-summary" id="orderSummary">
+  <div style="display:flex;align-items:center;">
+    <div class="order-thumb">💎</div>
+    <div class="order-info">
+      <div class="order-name" id="sumName">-</div>
+      <div class="order-qty">x1</div>
+    </div>
+  </div>
+  <div class="order-price" id="sumPrice">-</div>
 </div>
 
 <div id="pageContent"></div>
 
-<div class="bottom-btn">
-  <button class="btn-primary" id="mainBtn" onclick="nextStep()">下一步</button>
+<div class="bottom-btn" id="bottomBar">
+  <div class="bottom-simple">
+    <button class="btn-primary" id="mainBtn" onclick="nextStep()">下一步 →</button>
+  </div>
 </div>
 
 <script>
@@ -312,417 +179,445 @@
     { vp: 22000, price: 5320 },
     { vp: 33000, price: 7980 },
   ];
+  const PAY_METHODS = [
+    { id:'BANK', icon:'🏦', title:'銀行轉帳',  tag:'人工確認',  tagCls:'',     desc:'轉帳後需截圖回傳，確認入帳後出貨', extra:0  },
+    { id:'CVS',  icon:'🏪', title:'超商代碼',  tag:'四大超商',  tagCls:'',     desc:'7-11 / 全家 / 萊爾富 / OK，手續費 +NT$30', extra:30 },
+    { id:'USDT', icon:'💎', title:'USDT 支付', tag:'需驗證',    tagCls:'gray', desc:'支援 BEP20（幣安鏈 BSC）區塊鏈', extra:0  },
+  ];
+  const LOGIN_TYPES = [
+    { id:'riot',     icon:'⚔️', name:'Riot',     accLabel:'帳號',      ph:'Riot 帳號（英文）' },
+    { id:'google',   icon:'🔵', name:'Google',   accLabel:'Gmail',     ph:'example@gmail.com' },
+    { id:'facebook', icon:'📘', name:'Facebook', accLabel:'帳號/Email', ph:'Facebook 帳號或 Email' },
+    { id:'apple',    icon:'🍎', name:'Apple',    accLabel:'Apple ID',  ph:'example@icloud.com' },
+  ];
 
   let step = 1;
   let sel = {
-    denom: null,
-    loginType: '',
-    loginAccount: '',
-    loginPassword: '',
-    riotId: '',
-    carrier: '',
-    paymentType: 'BANK',   // 'BANK' = 無卡, 'USDT'
-    bankInfo: null,
+    denom:null, loginType:'', loginAccount:'', loginPassword:'',
+    riotId:'', phone:'', phoneVerified:false,
+    carrier:'', discountCode:'', discountAmount:0,
+    paymentType:'BANK', bankInfo:null,
   };
   let userId = null;
+  let otpCountdown = 0, otpTimer = null;
 
-  const LOGIN_TYPES = [
-    { id: 'riot',     icon: '⚔️', name: 'Riot',     accLabel: '帳號',     accPlaceholder: 'Riot 帳號（英文）' },
-    { id: 'google',   icon: '🔵', name: 'Google',   accLabel: 'Gmail',    accPlaceholder: 'example@gmail.com' },
-    { id: 'facebook', icon: '📘', name: 'Facebook', accLabel: '帳號/Email', accPlaceholder: 'Facebook 帳號或 Email' },
-    { id: 'apple',    icon: '🍎', name: 'Apple',    accLabel: 'Apple ID',  accPlaceholder: 'example@icloud.com' },
-  ];
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function validateCarrier(c){ if(!c) return true; return /^\/[0-9A-Za-z+\-]{7}$/.test(c); }
+  function getTotal(){
+    if(sel.denom===null) return 0;
+    const pm = PAY_METHODS.find(p=>p.id===sel.paymentType)||{};
+    return DENOMS[sel.denom].price + (pm.extra||0) - sel.discountAmount;
+  }
 
-  async function init() {
-    try {
-      if (LIFF_ID && LIFF_ID !== '') {
-        await liff.init({ liffId: LIFF_ID });
-        if (liff.isLoggedIn()) {
-          const p = await liff.getProfile();
-          userId = p.userId;
-        }
+  async function init(){
+    try{
+      if(LIFF_ID && LIFF_ID!==''){
+        await liff.init({liffId:LIFF_ID});
+        if(liff.isLoggedIn()){ const p=await liff.getProfile(); userId=p.userId; }
       }
-    } catch(e) {}
+    }catch(e){}
     render();
   }
 
-  function setStep(n) {
-    step = n;
-    render();
-    window.scrollTo(0, 0);
-  }
+  function setStep(n){ step=n; render(); window.scrollTo(0,0); }
 
-  function esc(s) {
-    return String(s)
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
-  function render() {
-    ['s1','s2','s3','s4'].forEach((id, i) => {
-      const n = i + 1;
-      document.getElementById(id).className =
-        'step' + (n < step ? ' done' : n === step ? ' active' : '');
+  function render(){
+    ['s1','s2','s3','s4','s5'].forEach((id,i)=>{
+      const n=i+1;
+      document.getElementById(id).className='step'+(n<step?' done':n===step?' active':'');
     });
-
-    const btn = document.getElementById('mainBtn');
-    const c = document.getElementById('pageContent');
-
-    if (step === 1) {
-      btn.textContent = '下一步 →';
-      btn.disabled = sel.denom === null;
-      c.innerHTML = `
-        <div class="content">
-          <div class="game-banner">
-            <div class="game-badge">RIOT GAMES</div>
-            <div class="game-name">VALORANT</div>
-            <div class="game-sub">特戰英豪 · VP 點數儲值</div>
-            <div class="vp-icon">💎</div>
-          </div>
-          <div class="section-title">選擇面額</div>
-          <div class="denom-grid">
-            ${DENOMS.map((d, i) => `
-              <div class="denom-card ${sel.denom===i?'selected':''}" onclick="pickDenom(${i})">
-                <div class="denom-badge">VALORANT</div>
-                <div class="denom-vp">${d.vp.toLocaleString()}</div>
-                <div class="denom-vp-unit">特務幣 VP</div>
-                <div class="denom-price">NT$ ${d.price}</div>
-              </div>`).join('')}
-          </div>
-        </div>`;
-
-    } else if (step === 2) {
-      const lt = LOGIN_TYPES.find(l => l.id === sel.loginType);
-      btn.textContent = '下一步 →';
-      btn.disabled = false;
-      c.innerHTML = `
-        <div class="content">
-          <div class="form-group">
-            <label class="form-label">遊戲帳號登入方式</label>
-            <div class="login-grid">
-              ${LOGIN_TYPES.map(l => `
-                <div class="login-card ${sel.loginType===l.id?'selected':''}" onclick="pickLogin('${l.id}')">
-                  <div class="login-icon">${l.icon}</div>
-                  <div class="login-name">${l.name}</div>
-                </div>`).join('')}
-            </div>
-          </div>
-          ${lt ? `
-          <div class="cred-box">
-            <div class="form-group">
-              <label class="form-label">${lt.accLabel}</label>
-              <input class="form-input" id="credAccount" type="text"
-                placeholder="${lt.accPlaceholder}"
-                value="${esc(sel.loginAccount)}" autocomplete="off">
-            </div>
-            <div class="form-group">
-              <label class="form-label">密碼</label>
-              <input class="form-input" id="credPassword" type="password"
-                placeholder="登入密碼" autocomplete="off">
-            </div>
-          </div>` : `
-          <div class="note-box" style="margin-bottom:16px;">
-            👆 請先選擇您的登入方式
-          </div>`}
-          <div class="form-group">
-            <label class="form-label">Riot ID</label>
-            <input class="form-input" id="riotInput" type="text"
-              placeholder="例如：Meow#TW1"
-              value="${esc(sel.riotId)}" autocomplete="off">
-            <div class="form-hint">請輸入完整 Riot ID，需包含 # 符號</div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">電子發票載具 <span style="font-weight:400;color:#aaa">（選填）</span></label>
-            <input class="form-input" id="carrierInput" type="text"
-              placeholder="/XXXXXXX（手機條碼）"
-              value="${esc(sel.carrier)}" autocomplete="off">
-            <div class="form-hint">需要電子發票請填入手機條碼</div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">付款方式</label>
-            <div class="pay-grid">
-              <div class="pay-card ${sel.paymentType==='BANK'?'selected':''}" onclick="pickPay('BANK')">
-                <div class="pay-icon">🏧</div>
-                <div class="pay-name">無卡存款</div>
-                <div class="pay-desc">ATM / 臨櫃</div>
-              </div>
-              <div class="pay-card ${sel.paymentType==='USDT'?'selected':''}" onclick="pickPay('USDT')">
-                <div class="pay-icon">💎</div>
-                <div class="pay-name">USDT</div>
-                <div class="pay-desc">加密貨幣支付</div>
-              </div>
-            </div>
-          </div>
-        </div>`;
-      setTimeout(() => {
-        const f = (id, cb) => { const el = document.getElementById(id); if(el) el.addEventListener('input', cb); };
-        f('credAccount',  () => { sel.loginAccount  = document.getElementById('credAccount').value; });
-        f('credPassword', () => { sel.loginPassword = document.getElementById('credPassword').value; });
-        f('riotInput',    () => { sel.riotId        = document.getElementById('riotInput').value; });
-        f('carrierInput', () => { sel.carrier       = document.getElementById('carrierInput').value; });
-        // 顯示已有密碼（password 欄位不預填，讓使用者重新輸入）
-      }, 0);
-
-    } else if (step === 3) {
-      const d = DENOMS[sel.denom];
-      const ltName = (LOGIN_TYPES.find(l => l.id === sel.loginType)||{}).name || sel.loginType;
-      btn.textContent = '確認下單 →';
-      btn.disabled = false;
-      c.innerHTML = `
-        <div class="content">
-          <div class="confirm-card">
-            <div class="confirm-header">📋 訂單確認</div>
-            <div class="confirm-row">
-              <span class="confirm-label">儲值點數</span>
-              <span class="confirm-value">${d.vp.toLocaleString()} VP</span>
-            </div>
-            <div class="confirm-row">
-              <span class="confirm-label">Riot ID</span>
-              <span class="confirm-value">${esc(sel.riotId)}</span>
-            </div>
-            <div class="confirm-row">
-              <span class="confirm-label">登入方式</span>
-              <span class="confirm-value">${esc(ltName)}</span>
-            </div>
-            <div class="confirm-row">
-              <span class="confirm-label">帳號</span>
-              <span class="confirm-value">${esc(sel.loginAccount)}</span>
-            </div>
-            ${sel.carrier ? `
-            <div class="confirm-row">
-              <span class="confirm-label">發票載具</span>
-              <span class="confirm-value">${esc(sel.carrier)}</span>
-            </div>` : ''}
-            <div class="confirm-row">
-              <span class="confirm-label">付款方式</span>
-              <span class="confirm-value">${sel.paymentType==='USDT'?'💎 USDT':'🏧 無卡存款'}</span>
-            </div>
-            <div class="confirm-row confirm-total">
-              <span class="confirm-label">應付金額</span>
-              <span class="confirm-value">NT$ ${d.price}</span>
-            </div>
-          </div>
-          <div class="note-box">
-            ⚠️ 請確認帳號密碼及 Riot ID 正確無誤，上號完成後無法退款。<br>
-            我們會在收款後盡快完成儲值。
-          </div>
-        </div>`;
-
-    } else if (step === 4) {
-      btn.textContent = '關閉';
-      btn.disabled = false;
-      const info = sel.bankInfo || {};
-      const isUsdt = info.paymentType === 'USDT';
-      c.innerHTML = `
-        <div class="content">
-          <div style="text-align:center;padding:24px 0 16px;">
-            <div style="font-size:56px;margin-bottom:12px;">🎉</div>
-            <div style="font-size:20px;font-weight:800;color:#333;margin-bottom:6px;">訂單建立成功！</div>
-            <div style="font-size:13px;color:#888;">請完成付款後等候儲值</div>
-          </div>
-          ${isUsdt ? `
-          <div class="confirm-card">
-            <div class="confirm-header">💎 USDT 付款資訊</div>
-            <div class="confirm-row">
-              <span class="confirm-label">網路</span>
-              <span class="confirm-value" style="color:#FF7043;font-weight:800;">${esc(info.usdtNetwork||'TRC20')}</span>
-            </div>
-            <div class="confirm-row">
-              <span class="confirm-label">收款地址</span>
-              <span class="confirm-value" style="font-size:11px;word-break:break-all;">${esc(info.usdtAddress||'')}</span>
-            </div>
-            <div class="confirm-row confirm-total">
-              <span class="confirm-label">付款金額</span>
-              <span class="confirm-value">${info.usdtAmount||''} USDT</span>
-            </div>
-            <div class="confirm-row">
-              <span class="confirm-label">台幣參考</span>
-              <span class="confirm-value" style="color:#888;">NT$ ${info.amount||''}</span>
-            </div>
-            <div class="confirm-row">
-              <span class="confirm-label">訂單編號</span>
-              <span class="confirm-value" style="font-size:11px;">${esc(info.orderId||'')}</span>
-            </div>
-          </div>
-          <div class="note-box">
-            ⚠️ 請務必選擇 <strong>${esc(info.usdtNetwork||'BEP20')}</strong>（幣安鏈 BSC）網路轉帳，網路錯誤將導致資金損失！<br>
-            轉帳備註請填寫訂單編號，確認收款後開始儲值。
-          </div>` : `
-          <div class="confirm-card">
-            <div class="confirm-header">🏧 無卡存款資訊</div>
-            <div class="confirm-row">
-              <span class="confirm-label">銀行</span>
-              <span class="confirm-value">${esc(info.bankName||'')}（${esc(info.bankCode||'')}）</span>
-            </div>
-            <div class="confirm-row">
-              <span class="confirm-label">帳號</span>
-              <span class="confirm-value" style="font-size:16px;font-weight:800;letter-spacing:1px;color:#FF7043;">${esc(info.bankAccount||'')}</span>
-            </div>
-            <div class="confirm-row confirm-total">
-              <span class="confirm-label">存款金額</span>
-              <span class="confirm-value">NT$ ${info.amount||''}</span>
-            </div>
-            <div class="confirm-row">
-              <span class="confirm-label">訂單編號</span>
-              <span class="confirm-value" style="font-size:12px;">${esc(info.orderId||'')}</span>
-            </div>
-          </div>
-          <div class="note-box">
-            💡 至任何銀行 ATM 選擇「無卡存款」，輸入上方帳號存款。<br>
-            備註請填寫訂單編號，確認收款後開始儲值。
-          </div>`}
-        </div>`;
-    }
-  }
-
-  function pickDenom(i) {
-    sel.denom = i;
-    render();
-  }
-
-  function pickLogin(t) {
-    sel.loginType = t;
-    sel.loginPassword = '';
-    render();
-  }
-
-  function pickPay(t) {
-    if (t === 'USDT') {
-      showUsdtVerify();
-      return;
-    }
-    sel.paymentType = t;
-    render();
-  }
-
-  function showUsdtVerify() {
-    if (document.getElementById('usdtModal')) return;
-    const el = document.createElement('div');
-    el.id = 'usdtModal';
-    el.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:300;display:flex;align-items:center;justify-content:center;padding:24px;';
-    el.innerHTML = `
-      <div style="background:#fff;border-radius:20px;padding:28px 20px;width:100%;max-width:320px;box-shadow:0 8px 30px rgba(0,0,0,0.2);">
-        <div style="text-align:center;margin-bottom:20px;">
-          <div style="font-size:42px;margin-bottom:8px;">💎</div>
-          <div style="font-size:17px;font-weight:800;color:#222;">USDT 付款驗證</div>
-          <div style="font-size:12px;color:#999;margin-top:6px;line-height:1.6;">請輸入驗證碼以解鎖<br>USDT 加密貨幣付款</div>
-        </div>
-        <input id="usdtCode" class="form-input" type="text"
-          placeholder="請輸入驗證碼" autocomplete="off"
-          style="margin-bottom:8px;"
-          onkeydown="if(event.key==='Enter')confirmUsdtVerify()">
-        <div id="usdtErr" style="color:#FF4655;font-size:12px;margin-bottom:10px;min-height:16px;"></div>
-        <button class="btn-primary" onclick="confirmUsdtVerify()" style="margin-bottom:10px;">確認解鎖</button>
-        <button onclick="closeUsdtModal()"
-          style="width:100%;padding:12px;background:none;border:1.5px solid #eee;border-radius:12px;font-size:14px;font-weight:600;color:#999;cursor:pointer;">
-          取消
-        </button>
-      </div>`;
-    document.body.appendChild(el);
-    setTimeout(() => { const inp = document.getElementById('usdtCode'); if(inp) inp.focus(); }, 80);
-  }
-
-  async function confirmUsdtVerify() {
-    const codeEl = document.getElementById('usdtCode');
-    const errEl  = document.getElementById('usdtErr');
-    const code   = codeEl ? codeEl.value.trim() : '';
-    if (!code) { errEl.textContent = '請輸入驗證碼'; return; }
-    errEl.textContent = '驗證中...';
-    try {
-      const res  = await fetch('/api/verify_usdt', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ code })
-      });
-      const data = await res.json();
-      if (data.valid) {
-        closeUsdtModal();
-        sel.paymentType = 'USDT';
-        render();
-      } else {
-        errEl.textContent = data.msg || '驗證碼錯誤，請重新輸入';
-        if (codeEl) { codeEl.value = ''; codeEl.focus(); }
-      }
-    } catch(e) {
-      errEl.textContent = '網路錯誤，請重試';
-    }
-  }
-
-  function closeUsdtModal() {
-    const m = document.getElementById('usdtModal');
-    if (m) m.remove();
-  }
-
-  async function nextStep() {
-    if (step === 1) {
-      if (sel.denom === null) return;
-      setStep(2);
-
-    } else if (step === 2) {
-      // 收集欄位值
-      const ga = document.getElementById('credAccount');
-      const gp = document.getElementById('credPassword');
-      const ri = document.getElementById('riotInput');
-      const ca = document.getElementById('carrierInput');
-      if (ga) sel.loginAccount  = ga.value.trim();
-      if (gp) sel.loginPassword = gp.value;
-      if (ri) sel.riotId        = ri.value.trim();
-      if (ca) sel.carrier       = ca.value.trim();
-
-      if (!sel.loginType)     { alert('請選擇登入方式');                return; }
-      if (!sel.loginAccount)  { alert('請填寫帳號');                    return; }
-      if (!sel.loginPassword) { alert('請填寫密碼');                    return; }
-      if (!sel.riotId)        { alert('請填寫 Riot ID');               return; }
-      if (!sel.riotId.includes('#')) {
-        alert('Riot ID 格式不對，請包含 # 符號\n例如：Meow#TW1');
-        return;
-      }
-      setStep(3);
-
-    } else if (step === 3) {
-      await submitOrder();
-
+    // Order summary strip
+    const sum = document.getElementById('orderSummary');
+    if(step>=3 && step<=5 && sel.denom!==null){
+      const d=DENOMS[sel.denom];
+      document.getElementById('sumName').textContent=`${d.vp.toLocaleString()} 特務幣`;
+      document.getElementById('sumPrice').textContent=`NT$ ${d.price}`;
+      sum.classList.add('show');
+    } else { sum.classList.remove('show'); }
+    // Bottom bar
+    const bar = document.getElementById('bottomBar');
+    if(step===4){
+      bar.innerHTML=`<div class="bottom-total"><div class="total-left"><div class="lbl">總計</div><div class="amt">NT$ ${getTotal().toLocaleString()}</div></div><div class="total-actions"><button class="btn-back" onclick="setStep(3)">↩</button><button class="btn-submit" id="mainBtn" onclick="nextStep()">🛒 確認下單</button></div></div>`;
+    } else if(step===5){
+      bar.innerHTML=`<div class="bottom-simple"><button class="btn-primary" onclick="tryClose()">關閉</button></div>`;
     } else {
-      try { liff.closeWindow(); } catch(e) {}
+      bar.innerHTML=`<div class="bottom-simple"><button class="btn-primary" id="mainBtn" onclick="nextStep()">${step===1?'&#8203;':'下一步 →'}</button></div>`;
+      if(step===1){ const b=document.getElementById('mainBtn'); if(b) b.style.display='none'; }
+      if(step===2){ const b=document.getElementById('mainBtn'); if(b) b.disabled=sel.denom===null; }
+    }
+    const c=document.getElementById('pageContent');
+    if(step===1) renderStep1(c);
+    else if(step===2) renderStep2(c);
+    else if(step===3) renderStep3(c);
+    else if(step===4) renderStep4(c);
+    else if(step===5) renderStep5(c);
+  }
+
+  /* ── Step 1: Select game ── */
+  function renderStep1(c){
+    c.innerHTML=`<div class="content">
+      <div class="game-banner" onclick="setStep(2)">
+        <div class="game-badge">RIOT GAMES</div>
+        <div class="game-name">VALORANT</div>
+        <div class="game-sub">特戰英豪 · 特務幣 VP 儲值</div>
+        <div class="vp-icon">💎</div>
+        <div class="game-tap">👆 點擊選擇此遊戲</div>
+      </div></div>`;
+  }
+
+  /* ── Step 2: Select denomination ── */
+  function renderStep2(c){
+    c.innerHTML=`<div class="content">
+      <div class="section-title">選擇面額</div>
+      <div class="denom-grid">
+        ${DENOMS.map((d,i)=>`
+          <div class="denom-card ${sel.denom===i?'selected':''}" onclick="pickDenom(${i})">
+            <div class="denom-badge">VALORANT</div>
+            <div class="denom-vp">${d.vp.toLocaleString()}</div>
+            <div class="denom-vp-unit">特務幣 VP</div>
+            <div class="denom-price">NT$ ${d.price}</div>
+          </div>`).join('')}
+      </div></div>`;
+    const b=document.getElementById('mainBtn'); if(b) b.disabled=sel.denom===null;
+  }
+
+  /* ── Step 3: Fill data ── */
+  function renderStep3(c){
+    const lt=LOGIN_TYPES.find(l=>l.id===sel.loginType);
+    const cOk=validateCarrier(sel.carrier);
+    const cHint=sel.carrier?(cOk?'✅ 格式正確':'❌ 格式錯誤，需 / 開頭加 7 碼英數字（例：/ABC1234）'):'需要電子發票請填入，可留空';
+    c.innerHTML=`<div class="content">
+      <div class="form-group">
+        <label class="form-label">遊戲帳號登入方式</label>
+        <div class="login-grid">
+          ${LOGIN_TYPES.map(l=>`
+            <div class="login-card ${sel.loginType===l.id?'selected':''}" onclick="pickLogin('${l.id}')">
+              <div class="login-icon">${l.icon}</div>
+              <div class="login-name">${l.name}</div>
+            </div>`).join('')}
+        </div>
+      </div>
+      ${lt?`<div class="cred-box">
+        <div class="form-group">
+          <label class="form-label">${lt.accLabel}</label>
+          <input class="form-input" id="credAccount" type="text" placeholder="${lt.ph}" value="${esc(sel.loginAccount)}" autocomplete="off">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">密碼</label>
+          <input class="form-input" id="credPassword" type="password" placeholder="登入密碼" autocomplete="off">
+        </div>
+      </div>`:`<div class="note-box" style="margin-bottom:16px;">👆 請先選擇您的登入方式</div>`}
+      <div class="form-group">
+        <label class="form-label">Riot ID</label>
+        <input class="form-input" id="riotInput" type="text" placeholder="例如：Meow#TW1" value="${esc(sel.riotId)}" autocomplete="off">
+        <div class="form-hint">請輸入完整 Riot ID，需包含 # 符號</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">手機號碼驗證</label>
+        <div class="input-btn-row">
+          <input class="form-input" id="phoneInput" type="tel" placeholder="09XXXXXXXX" value="${esc(sel.phone)}" ${sel.phoneVerified?'readonly':''}>
+          <button class="btn-action" id="btnSendOtp" onclick="sendOtp()" ${sel.phoneVerified||otpCountdown>0?'disabled':''}>
+            ${sel.phoneVerified?'✅ 已驗證':otpCountdown>0?otpCountdown+'s':'發送驗證碼'}
+          </button>
+        </div>
+        ${!sel.phoneVerified?`
+        <div id="otpRow" style="margin-top:10px;${sel.phone.length<10?'display:none':''}">
+          <div class="input-btn-row">
+            <input class="form-input" id="otpInput" type="number" placeholder="輸入 6 位驗證碼">
+            <button class="btn-action green" onclick="verifyOtp()">驗證</button>
+          </div>
+        </div>`:''}
+        <div class="form-hint ${sel.phoneVerified?'ok':''}">
+          ${sel.phoneVerified?'✅ 手機驗證成功，可繼續下一步':'驗證碼將發送至您的 LINE，完成驗證後才能下單'}
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">電子發票載具 <span style="font-weight:400;color:#aaa">（選填）</span></label>
+        <input class="form-input ${sel.carrier?(cOk?'valid':'error'):''}" id="carrierInput" type="text" placeholder="/XXXXXXX（手機條碼）" value="${esc(sel.carrier)}" autocomplete="off">
+        <div class="form-hint ${sel.carrier?(cOk?'ok':'err'):''}">${cHint}</div>
+      </div>
+    </div>`;
+    setTimeout(()=>{
+      const f=(id,cb)=>{ const el=document.getElementById(id); if(el) el.addEventListener('input',cb); };
+      f('credAccount', ()=>{ sel.loginAccount=document.getElementById('credAccount').value; });
+      f('credPassword',()=>{ sel.loginPassword=document.getElementById('credPassword').value; });
+      f('riotInput',   ()=>{ sel.riotId=document.getElementById('riotInput').value; });
+      f('phoneInput',  ()=>{
+        sel.phone=document.getElementById('phoneInput').value.trim();
+        const r=document.getElementById('otpRow');
+        if(r) r.style.display=sel.phone.length>=10?'':'none';
+      });
+      f('carrierInput',()=>{
+        sel.carrier=document.getElementById('carrierInput').value.trim().toUpperCase();
+        const inp=document.getElementById('carrierInput');
+        const hint=inp.nextElementSibling;
+        const ok=validateCarrier(sel.carrier);
+        inp.className='form-input'+(sel.carrier?(ok?' valid':' error'):'');
+        if(hint){
+          hint.textContent=sel.carrier?(ok?'✅ 格式正確':'❌ 格式錯誤，需 / 開頭加 7 碼英數字（例：/ABC1234）'):'需要電子發票請填入，可留空';
+          hint.className='form-hint'+(sel.carrier?(ok?' ok':' err'):'');
+        }
+      });
+    },0);
+  }
+
+  /* ── Step 4: Confirm + payment method ── */
+  function renderStep4(c){
+    c.innerHTML=`<div class="content">
+      <div class="form-group">
+        <label class="form-label">🎁 優惠代碼</label>
+        <div class="discount-row">
+          <input class="form-input" id="discountInput" type="text" placeholder="請輸入優惠代碼" value="${esc(sel.discountCode)}" autocomplete="off">
+          <button class="btn-use" id="btnDiscount" onclick="useDiscount()">使用</button>
+        </div>
+        ${sel.discountAmount>0?`<div class="form-hint ok">✅ 折抵 NT$ ${sel.discountAmount}</div>`:''}
+      </div>
+      <div class="form-group">
+        <label class="form-label">選擇付款方式</label>
+        <div class="pay-list">
+          ${PAY_METHODS.map(pm=>`
+            <div class="pay-item ${sel.paymentType===pm.id?'selected':''}" onclick="pickPay('${pm.id}')">
+              <div class="pay-radio"></div>
+              <div class="pay-item-icon">${pm.icon}</div>
+              <div class="pay-body">
+                <div class="pay-title">${pm.title}<span class="pay-tag ${pm.tagCls}">${pm.tag}</span></div>
+                <div class="pay-desc">${pm.desc}</div>
+              </div>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+  }
+
+  /* ── Step 5: Complete / payment info ── */
+  function renderStep5(c){
+    const info=sel.bankInfo||{};
+    const isUsdt=info.paymentType==='USDT';
+    const isCvs=info.paymentType==='CVS';
+    c.innerHTML=`<div class="content">
+      <div style="text-align:center;padding:20px 0 16px;">
+        <div style="font-size:52px;margin-bottom:10px;">🎉</div>
+        <div style="font-size:20px;font-weight:800;color:#333;margin-bottom:6px;">訂單建立成功！</div>
+        <div style="font-size:13px;color:#888;">請完成付款，確認後開始儲值</div>
+      </div>
+      <div class="confirm-card">
+        <div class="confirm-header">${isUsdt?'💎 USDT 付款資訊':isCvs?'🏪 超商代碼繳費':'🏦 銀行轉帳資訊'}</div>
+        ${isUsdt?`
+          <div class="confirm-row"><span class="confirm-label">網路</span><span class="confirm-value" style="color:#FF7043;font-weight:800;">${esc(info.usdtNetwork||'BEP20')}</span></div>
+          <div class="confirm-row"><span class="confirm-label">收款地址</span><span class="confirm-value" style="font-size:11px;word-break:break-all;">${esc(info.usdtAddress||'')}</span></div>
+          <div class="confirm-row confirm-total"><span class="confirm-label">付款金額</span><span class="confirm-value">${info.usdtAmount||''} USDT</span></div>
+        `:isCvs?`
+          <div class="confirm-row"><span class="confirm-label">繳費代碼</span><span class="confirm-value" style="font-size:13px;color:#888;">代碼將透過 LINE 發送</span></div>
+          <div class="confirm-row confirm-total"><span class="confirm-label">繳費金額</span><span class="confirm-value">NT$ ${info.amount||''}</span></div>
+        `:`
+          <div class="confirm-row"><span class="confirm-label">銀行</span><span class="confirm-value">${esc(info.bankName||'')}（${esc(info.bankCode||'')}）</span></div>
+          <div class="confirm-row"><span class="confirm-label">帳號</span><span class="confirm-value" style="font-size:15px;font-weight:800;letter-spacing:1px;color:#FF7043;">${esc(info.bankAccount||'')}</span></div>
+          <div class="confirm-row confirm-total"><span class="confirm-label">轉帳金額</span><span class="confirm-value">NT$ ${info.amount||''}</span></div>
+        `}
+        <div class="confirm-row"><span class="confirm-label">訂單編號</span><span class="confirm-value" style="font-size:12px;">${esc(info.orderId||'')}</span></div>
+      </div>
+      <div class="note-box">
+        ${isUsdt
+          ?`⚠️ 請選擇 <strong>BEP20（幣安鏈 BSC）</strong> 網路，選錯網路資金將無法找回！<br>轉帳備註請填寫訂單編號。`
+          :isCvs
+          ?`📋 超商代碼將透過 LINE 發送給您，請至任一四大超商繳費。<br>確認收款後點數將發送至 <strong>${esc(sel.riotId)}</strong>`
+          :`💡 請至 ATM 選無卡存款，輸入上方帳號存款。<br>存款後請截圖傳給我們確認，確認後開始儲值。`
+        }
+      </div>
+    </div>`;
+  }
+
+  /* ── Helpers ── */
+  function pickDenom(i){
+    sel.denom=i;
+    document.querySelectorAll('.denom-card').forEach((el,idx)=>{
+      el.className='denom-card'+(idx===i?' selected':'');
+    });
+    const b=document.getElementById('mainBtn'); if(b) b.disabled=false;
+  }
+
+  function pickLogin(t){
+    sel.loginType=t; sel.loginPassword='';
+    renderStep3(document.getElementById('pageContent'));
+  }
+
+  function pickPay(t){
+    if(t==='USDT'){ showUsdtVerify(); return; }
+    sel.paymentType=t;
+    renderStep4(document.getElementById('pageContent'));
+    // Update total in bottom bar
+    const amt=document.querySelector('.amt');
+    if(amt) amt.textContent=`NT$ ${getTotal().toLocaleString()}`;
+  }
+
+  async function sendOtp(){
+    const phoneEl=document.getElementById('phoneInput');
+    const phone=phoneEl?phoneEl.value.trim():sel.phone;
+    if(!/^09\d{8}$/.test(phone)){ alert('請輸入正確手機號碼（09 開頭，共 10 碼）'); return; }
+    sel.phone=phone;
+    const btn=document.getElementById('btnSendOtp');
+    if(btn){ btn.disabled=true; btn.textContent='發送中...'; }
+    try{
+      const res=await fetch('/api/send_otp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId,phone})});
+      const data=await res.json();
+      if(data.ok){
+        startOtpCountdown(60);
+        const row=document.getElementById('otpRow');
+        if(row) row.style.display='';
+        alert('驗證碼已發送到您的 LINE，請查看訊息！');
+      } else {
+        alert(data.msg||'發送失敗，請重試');
+        if(btn){ btn.disabled=false; btn.textContent='發送驗證碼'; }
+      }
+    }catch(e){
+      alert('網路錯誤，請重試');
+      if(btn){ btn.disabled=false; btn.textContent='發送驗證碼'; }
     }
   }
 
-  async function submitOrder() {
-    const btn = document.getElementById('mainBtn');
-    btn.disabled = true;
-    btn.textContent = '建立訂單中...';
-    try {
-      const d = DENOMS[sel.denom];
-      const res = await fetch('/api/liff_order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId:        userId,
-          vp:            d.vp,
-          price:         d.price,
-          riotId:        sel.riotId,
-          loginType:     sel.loginType,
-          loginAccount:  sel.loginAccount,
-          loginPassword: sel.loginPassword,
-          carrier:       sel.carrier,
-          paymentType:   sel.paymentType,
+  function startOtpCountdown(sec){
+    otpCountdown=sec;
+    if(otpTimer) clearInterval(otpTimer);
+    otpTimer=setInterval(()=>{
+      otpCountdown--;
+      const btn=document.getElementById('btnSendOtp');
+      if(btn){
+        if(otpCountdown<=0){ clearInterval(otpTimer); otpTimer=null; btn.disabled=false; btn.textContent='重新發送'; }
+        else { btn.textContent=otpCountdown+'s'; }
+      }
+    },1000);
+  }
+
+  async function verifyOtp(){
+    const otpEl=document.getElementById('otpInput');
+    const otp=otpEl?otpEl.value.trim():'';
+    if(!otp||otp.length!==6){ alert('請輸入 6 位驗證碼'); return; }
+    try{
+      const res=await fetch('/api/verify_otp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId,otp})});
+      const data=await res.json();
+      if(data.valid){
+        sel.phoneVerified=true;
+        if(otpTimer) clearInterval(otpTimer);
+        renderStep3(document.getElementById('pageContent'));
+      } else { alert(data.msg||'驗證碼錯誤'); }
+    }catch(e){ alert('網路錯誤，請重試'); }
+  }
+
+  async function useDiscount(){
+    const inp=document.getElementById('discountInput');
+    const code=inp?inp.value.trim().toUpperCase():'';
+    if(!code){ alert('請輸入優惠代碼'); return; }
+    try{
+      const res=await fetch('/api/check_discount',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code})});
+      const data=await res.json();
+      if(data.valid){
+        sel.discountCode=code; sel.discountAmount=data.discount;
+        renderStep4(document.getElementById('pageContent'));
+        const amt=document.querySelector('.amt');
+        if(amt) amt.textContent=`NT$ ${getTotal().toLocaleString()}`;
+      } else { alert(data.msg||'無效的優惠代碼'); }
+    }catch(e){ alert('網路錯誤，請重試'); }
+  }
+
+  /* USDT verify modal */
+  function showUsdtVerify(){
+    if(document.getElementById('usdtModal')) return;
+    const el=document.createElement('div');
+    el.id='usdtModal';
+    el.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:300;display:flex;align-items:center;justify-content:center;padding:24px;';
+    el.innerHTML=`<div style="background:#fff;border-radius:20px;padding:28px 20px;width:100%;max-width:320px;box-shadow:0 8px 30px rgba(0,0,0,0.2);">
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="font-size:42px;margin-bottom:8px;">💎</div>
+        <div style="font-size:17px;font-weight:800;color:#222;">USDT 付款驗證</div>
+        <div style="font-size:12px;color:#999;margin-top:6px;line-height:1.6;">請輸入驗證碼以解鎖<br>USDT 加密貨幣付款</div>
+      </div>
+      <input id="usdtCode" class="form-input" type="text" placeholder="請輸入驗證碼" autocomplete="off" style="margin-bottom:8px;" onkeydown="if(event.key==='Enter')confirmUsdtVerify()">
+      <div id="usdtErr" style="color:#FF4655;font-size:12px;margin-bottom:10px;min-height:16px;"></div>
+      <button class="btn-primary" onclick="confirmUsdtVerify()" style="margin-bottom:10px;">確認解鎖</button>
+      <button onclick="closeUsdtModal()" style="width:100%;padding:12px;background:none;border:1.5px solid #eee;border-radius:12px;font-size:14px;font-weight:600;color:#999;cursor:pointer;">取消</button>
+    </div>`;
+    document.body.appendChild(el);
+    setTimeout(()=>{ const inp=document.getElementById('usdtCode'); if(inp) inp.focus(); },80);
+  }
+
+  async function confirmUsdtVerify(){
+    const codeEl=document.getElementById('usdtCode');
+    const errEl=document.getElementById('usdtErr');
+    const code=codeEl?codeEl.value.trim():'';
+    if(!code){ errEl.textContent='請輸入驗證碼'; return; }
+    errEl.textContent='驗證中...';
+    try{
+      const res=await fetch('/api/verify_usdt',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code})});
+      const data=await res.json();
+      if(data.valid){
+        closeUsdtModal(); sel.paymentType='USDT';
+        renderStep4(document.getElementById('pageContent'));
+        const amt=document.querySelector('.amt');
+        if(amt) amt.textContent=`NT$ ${getTotal().toLocaleString()}`;
+      } else {
+        errEl.textContent=data.msg||'驗證碼錯誤';
+        if(codeEl){ codeEl.value=''; codeEl.focus(); }
+      }
+    }catch(e){ errEl.textContent='網路錯誤，請重試'; }
+  }
+
+  function closeUsdtModal(){ const m=document.getElementById('usdtModal'); if(m) m.remove(); }
+
+  async function nextStep(){
+    if(step===1){ setStep(2); }
+    else if(step===2){
+      if(sel.denom===null) return;
+      setStep(3);
+    }
+    else if(step===3){
+      const ga=document.getElementById('credAccount');
+      const gp=document.getElementById('credPassword');
+      const ri=document.getElementById('riotInput');
+      const ca=document.getElementById('carrierInput');
+      if(ga) sel.loginAccount=ga.value.trim();
+      if(gp&&gp.value) sel.loginPassword=gp.value;
+      if(ri) sel.riotId=ri.value.trim();
+      if(ca) sel.carrier=ca.value.trim().toUpperCase();
+      if(!sel.loginType)     { alert('請選擇登入方式'); return; }
+      if(!sel.loginAccount)  { alert('請填寫帳號'); return; }
+      if(!sel.loginPassword) { alert('請填寫密碼'); return; }
+      if(!sel.riotId)        { alert('請填寫 Riot ID'); return; }
+      if(!sel.riotId.includes('#')){ alert('Riot ID 格式不對，需包含 # 符號\n例如：Meow#TW1'); return; }
+      if(!sel.phoneVerified) { alert('請完成手機驗證後再繼續'); return; }
+      if(sel.carrier&&!validateCarrier(sel.carrier)){ alert('發票載具格式錯誤\n需 / 開頭加 7 碼英數字\n例：/ABC1234'); return; }
+      setStep(4);
+    }
+    else if(step===4){ await submitOrder(); }
+  }
+
+  async function submitOrder(){
+    const btn=document.querySelector('.btn-submit')||document.getElementById('mainBtn');
+    if(btn){ btn.disabled=true; btn.innerHTML='建立中...'; }
+    try{
+      const d=DENOMS[sel.denom];
+      const res=await fetch('/api/liff_order',{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          userId,vp:d.vp,price:d.price,riotId:sel.riotId,
+          loginType:sel.loginType,loginAccount:sel.loginAccount,loginPassword:sel.loginPassword,
+          phone:sel.phone,carrier:sel.carrier,
+          discountCode:sel.discountCode,discountAmount:sel.discountAmount,
+          paymentType:sel.paymentType,
         })
       });
-      const data = await res.json();
-      if (data.orderId) {
-        sel.bankInfo = data;
-        setStep(4);
-      } else {
-        alert('建立失敗：' + (data.error || '未知錯誤'));
-        btn.disabled = false;
-        btn.textContent = '確認下單 →';
+      const data=await res.json();
+      if(data.orderId){ sel.bankInfo=data; setStep(5); }
+      else{
+        alert('建立失敗：'+(data.error||'未知錯誤'));
+        if(btn){ btn.disabled=false; btn.innerHTML='🛒 確認下單'; }
       }
-    } catch(e) {
+    }catch(e){
       alert('網路錯誤，請重試');
-      btn.disabled = false;
-      btn.textContent = '確認下單 →';
+      if(btn){ btn.disabled=false; btn.innerHTML='🛒 確認下單'; }
     }
   }
+
+  function tryClose(){ try{ liff.closeWindow(); }catch(e){} }
 
   init();
 </script>
