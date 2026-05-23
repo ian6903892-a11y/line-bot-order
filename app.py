@@ -240,14 +240,14 @@ def send_otp():
                 PushMessageRequest(
                     to=user_id,
                     messages=[TextMessage(
-                        text=f'【喵喵儲值】您的驗證碼為：{otp}\n5 分鐘內有效，請勿洩漏給他人。'
+                        text=f'【鼠來寶工作室】您的驗證碼為：{otp}\n5 分鐘內有效，請勿洩漏給他人。'
                     )]
                 )
             )
         return jsonify({'ok': True})
     except Exception as e:
         print(f'OTP 發送失敗: {e}')
-        return jsonify({'ok': False, 'msg': '發送失敗，請確認已加入喵喵儲值為好友'})
+        return jsonify({'ok': False, 'msg': '發送失敗，請確認已加入鼠來寶工作室為好友'})
 
 @app.route('/api/verify_otp', methods=['POST'])
 def verify_otp():
@@ -355,9 +355,11 @@ def start_order(uid, token):
     liff_id = os.getenv('LIFF_ID', '')
     shop_url = f'https://liff.line.me/{liff_id}' if liff_id else f'{os.getenv("BASE_URL", "http://localhost:5000")}/liff'
     reply(token,
-        f'💎 喵喵儲值 - VALORANT VP\n\n'
+        f'💎 鼠來寶工作室 - VALORANT 特務幣儲值\n\n'
         f'點擊下方連結開始下單：\n{shop_url}\n\n'
-        f'付款完成後點數將於 30 分鐘內到帳'
+        f'✅ 安全來源，多年零封號記錄\n'
+        f'⚡ 確認付款後 30 分鐘內到帳\n'
+        f'💳 支援：銀行轉帳 / 超商代碼 / USDT'
     )
 
 RICH_MENU_ID = 'richmenu-7d5987ffaedc4085278467cfcd6099c9'
@@ -373,6 +375,84 @@ def link_rich_menu(uid):
     except Exception:
         pass
 
+FAQ_SAFETY = (
+    '🔒 安全性說明\n\n'
+    '我們透過以下三種安全管道取得遊戲虛擬貨幣：\n'
+    '• 跨區低匯率差\n'
+    '• 官方點數卡經銷商\n'
+    '• 遊戲官方特約串接\n\n'
+    '所有來源均符合官方規範，多年來零封號記錄。'
+)
+
+FAQ_SPEED = (
+    '⚡ 到帳速度說明\n\n'
+    '確認付款後通常 30 分鐘內完成儲值。\n'
+    '若遇人工驗證情況，最長約 2 小時。\n'
+    '超商代碼需等超商系統回傳確認，時間稍長。\n\n'
+    '客服時間：每日 10:00 – 22:00'
+)
+
+FAQ_PRICE = (
+    '💰 關於定價\n\n'
+    '價格可能隨時調整，原因包含：\n'
+    '• 跨區匯率波動\n'
+    '• 遊戲官方定價調整\n'
+    '• 庫存成本變動\n'
+    '• 平台手續費調整\n\n'
+    '建議下單前確認頁面標示價格，成立後依當時價格計算。'
+)
+
+FAQ_PAYMENT = (
+    '💳 付款方式\n\n'
+    '🏦 銀行轉帳 — 免手續費\n'
+    '   轉帳後截圖回傳確認\n\n'
+    '🏪 超商代碼 — 手續費 +NT$30\n'
+    '   7-11 / 全家 / 萊爾富 / OK\n\n'
+    '💎 USDT — BEP20（幣安鏈）\n'
+    '   需通過驗證才能使用\n\n'
+    '金流合作：藍新金流 NewebPay'
+)
+
+FAQ_DISCLAIMER = (
+    '📋 免責聲明\n\n'
+    '• 所有商品為遊戲虛擬貨幣，購買後不支援退款。\n'
+    '• 請確保提供的帳號資訊正確，輸入錯誤導致儲值失敗恕不負責。\n'
+    '• 本服務遵守遊戲官方服務條款，禁止用於違規用途。\n'
+    '• 疑問請透過 LINE 官方帳號聯繫客服。'
+)
+
+FAQ_BACKUP = (
+    '🔑 備用碼教學\n\n'
+    '📘 Facebook 復原碼\n'
+    '設定 → 安全和登入 → 使用雙重驗證\n'
+    '→ 復原碼 → 取得新碼\n\n'
+    '🔵 Google 備用驗證碼\n'
+    'myaccount.google.com → 安全性\n'
+    '→ 兩步驟驗證 → 備用碼\n\n'
+    '建議下單前提前準備備用碼，可加快儲值速度。'
+)
+
+FAQ_MENU = (
+    '📋 鼠來寶工作室 - 常見問題\n\n'
+    '請輸入以下關鍵字取得詳細說明：\n\n'
+    '🔒 「安全」— 安全性說明\n'
+    '⚡ 「速度」— 到帳時間\n'
+    '💰 「價格」— 定價說明\n'
+    '💳 「付款」— 付款方式\n'
+    '📋 「免責聲明」— 服務條款\n'
+    '🔑 「備用碼」— 備用碼教學\n\n'
+    '輸入「下單」開始購買特務幣'
+)
+
+WELCOME_MSG = (
+    '👋 歡迎來到鼠來寶工作室！\n\n'
+    '💎 VALORANT 特務幣儲值服務\n\n'
+    '輸入「下單」開始購買\n'
+    '輸入「問題」查看常見問題\n'
+    '輸入「付款」查看付款方式\n\n'
+    '客服時間：每日 10:00 – 22:00'
+)
+
 @handler.add(MessageEvent, message=TextMessageContent)
 def on_message(event):
     uid   = event.source.user_id
@@ -385,14 +465,30 @@ def on_message(event):
         reply(token, '已取消。輸入「下單」可重新開始。')
         return
 
+    # ── FAQ 關鍵字 ──────────────────────────────────────
+    if any(kw in text for kw in ['安全', '封號', '來源', '合法']):
+        reply(token, FAQ_SAFETY); return
+    if any(kw in text for kw in ['速度', '多久', '幾分鐘', '到帳', '何時']):
+        reply(token, FAQ_SPEED); return
+    if any(kw in text for kw in ['價格', '定價', '費用', '多少錢', '匯率']):
+        reply(token, FAQ_PRICE); return
+    if any(kw in text for kw in ['付款', '付錢', '轉帳', '超商', 'USDT', 'usdt', '銀行']):
+        reply(token, FAQ_PAYMENT); return
+    if any(kw in text for kw in ['免責', '退款', '條款', '聲明']):
+        reply(token, FAQ_DISCLAIMER); return
+    if any(kw in text for kw in ['備用碼', '備份碼', '復原碼', 'backup', '雙重驗證']):
+        reply(token, FAQ_BACKUP); return
+    if any(kw in text for kw in ['問題', 'faq', 'FAQ', '常見', '說明', '幫助', 'help']):
+        reply(token, FAQ_MENU); return
+
     step  = states.get(uid, {}).get('step', 'idle')
     state = states.get(uid, {})
 
     if step == 'idle':
-        if any(kw in text for kw in ['下單', '購買', '買', 'buy', 'hi', 'hello', '你好', '開始']):
+        if any(kw in text for kw in ['下單', '購買', '買', '儲值', 'buy', 'hi', 'hello', '你好', '開始', 'order']):
             start_order(uid, token)
         else:
-            reply(token, '👋 歡迎光臨！輸入「下單」開始購買遊戲點數。')
+            reply(token, WELCOME_MSG)
         return
 
     if step == 'select_product':

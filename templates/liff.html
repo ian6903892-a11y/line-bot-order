@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>喵喵儲值</title>
+  <title>鼠來寶工作室｜VALORANT 儲值</title>
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -126,13 +126,34 @@
     .btn-primary:disabled { background: #ccc; cursor: default; }
     .btn-submit { padding: 12px 24px; background: linear-gradient(90deg,#FF7043,#FF4655); color: #fff; border: none; border-radius: 50px; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; -webkit-tap-highlight-color: transparent; }
     .btn-submit:disabled { background: #ccc; }
+
+    /* Info panel */
+    .info-btn { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; border-radius: 50%; background: #f5f5f5; border: none; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #888; }
+    .info-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 500; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+    .info-overlay.show { opacity: 1; pointer-events: all; }
+    .info-panel { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-radius: 20px 20px 0 0; z-index: 501; max-height: 85vh; overflow-y: auto; transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.4,0,0.2,1); }
+    .info-panel.show { transform: translateY(0); }
+    .info-panel-handle { width: 40px; height: 4px; background: #ddd; border-radius: 2px; margin: 12px auto 0; }
+    .info-panel-title { padding: 16px 20px 8px; font-size: 17px; font-weight: 800; color: #222; }
+    .info-section { border-bottom: 1px solid #f0f0f0; }
+    .info-section-header { padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .info-section-label { font-size: 14px; font-weight: 700; color: #333; display: flex; align-items: center; gap: 8px; }
+    .info-section-arrow { font-size: 12px; color: #bbb; transition: transform 0.2s; }
+    .info-section.open .info-section-arrow { transform: rotate(180deg); }
+    .info-section-body { padding: 0 20px 16px; font-size: 13px; color: #666; line-height: 1.75; display: none; }
+    .info-section.open .info-section-body { display: block; }
+    .info-tag { display: inline-block; background: #FFF0EB; color: #FF7043; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; margin: 3px 2px; }
+    .info-tag.blue { background: #E8F0FE; color: #1a73e8; }
+    .company-footer { padding: 20px; text-align: center; font-size: 11px; color: #bbb; line-height: 1.8; background: #fafafa; border-top: 1px solid #f0f0f0; }
+    .company-footer strong { color: #999; }
   </style>
 </head>
 <body>
 
-<div class="header">
-  <h1>🐱 喵喵儲值｜快速下單系統</h1>
-  <div class="header-sub">meowouo.up.railway.app</div>
+<div class="header" style="position:relative;">
+  <h1>🐭 鼠來寶工作室｜特務幣儲值</h1>
+  <div class="header-sub">sholaibao.up.railway.app</div>
+  <button class="info-btn" onclick="openInfo()" title="常見問題">ℹ️</button>
 </div>
 
 <div class="steps">
@@ -620,6 +641,117 @@
   function tryClose(){ try{ liff.closeWindow(); }catch(e){} }
 
   init();
+
+  /* ── Info Panel ── */
+  function openInfo(){
+    document.getElementById('infoOverlay').classList.add('show');
+    document.getElementById('infoPanel').classList.add('show');
+  }
+  function closeInfo(){
+    document.getElementById('infoOverlay').classList.remove('show');
+    document.getElementById('infoPanel').classList.remove('show');
+  }
+  function toggleSection(el){
+    el.closest('.info-section').classList.toggle('open');
+  }
 </script>
+
+<!-- Info Overlay -->
+<div class="info-overlay" id="infoOverlay" onclick="closeInfo()"></div>
+<div class="info-panel" id="infoPanel">
+  <div class="info-panel-handle"></div>
+  <div class="info-panel-title">📋 常見問題 &amp; 服務說明</div>
+
+  <div class="info-section">
+    <div class="info-section-header" onclick="toggleSection(this)">
+      <div class="info-section-label">🔒 安全性說明</div>
+      <div class="info-section-arrow">▼</div>
+    </div>
+    <div class="info-section-body">
+      我們透過以下三種安全管道取得遊戲虛擬貨幣：<br><br>
+      <span class="info-tag">跨區低匯率差</span>
+      <span class="info-tag">官方點數卡經銷商</span>
+      <span class="info-tag">遊戲官方特約串接</span><br><br>
+      所有來源均符合官方規範，帳號安全有保障，多年來零封號記錄。
+    </div>
+  </div>
+
+  <div class="info-section">
+    <div class="info-section-header" onclick="toggleSection(this)">
+      <div class="info-section-label">⚡ 到帳速度</div>
+      <div class="info-section-arrow">▼</div>
+    </div>
+    <div class="info-section-body">
+      一般訂單確認付款後 <strong>30 分鐘內</strong> 完成儲值。<br>
+      若遇到需要人工驗證的情況，最長約 2 小時，客服全程跟進。<br><br>
+      超商代碼付款需等超商系統回傳確認，時間可能稍長。
+    </div>
+  </div>
+
+  <div class="info-section">
+    <div class="info-section-header" onclick="toggleSection(this)">
+      <div class="info-section-label">💰 關於定價</div>
+      <div class="info-section-arrow">▼</div>
+    </div>
+    <div class="info-section-body">
+      我們的價格可能隨時調整，原因包含：<br><br>
+      • 跨區匯率波動<br>
+      • 遊戲官方定價調整<br>
+      • 庫存成本變動<br>
+      • 平台手續費調整<br><br>
+      建議下單前確認當前頁面標示價格，成立訂單後依當時價格計算。
+    </div>
+  </div>
+
+  <div class="info-section">
+    <div class="info-section-header" onclick="toggleSection(this)">
+      <div class="info-section-label">💳 付款方式</div>
+      <div class="info-section-arrow">▼</div>
+    </div>
+    <div class="info-section-body">
+      <strong>🏦 銀行轉帳</strong> — 無手續費，轉帳後截圖回傳確認<br><br>
+      <strong>🏪 超商代碼</strong> — 手續費 NT$30，7-11 / 全家 / 萊爾富 / OK 均可<br><br>
+      <strong>💎 USDT</strong> — 支援 BEP20（幣安鏈 BSC），需通過驗證才能使用<br><br>
+      金流合作：<span class="info-tag blue">藍新金流 NewebPay</span>
+    </div>
+  </div>
+
+  <div class="info-section">
+    <div class="info-section-header" onclick="toggleSection(this)">
+      <div class="info-section-label">🔑 備用碼教學</div>
+      <div class="info-section-arrow">▼</div>
+    </div>
+    <div class="info-section-body">
+      使用社群帳號登入時，建議事先取得備用碼備用：<br><br>
+      <strong>Facebook 復原碼</strong><br>
+      設定 → 安全和登入 → 使用雙重驗證 → 復原碼 → 取得新碼<br><br>
+      <strong>Google 備用驗證碼</strong><br>
+      myaccount.google.com → 安全性 → 兩步驟驗證 → 備用碼<br><br>
+      若下單時需提供備用碼，請提前準備，可加快儲值速度。
+    </div>
+  </div>
+
+  <div class="info-section">
+    <div class="info-section-header" onclick="toggleSection(this)">
+      <div class="info-section-label">📋 免責聲明</div>
+      <div class="info-section-arrow">▼</div>
+    </div>
+    <div class="info-section-body">
+      • 所有商品均為遊戲虛擬貨幣，屬數位商品，<strong>購買後不支援退款</strong>。<br>
+      • 請確保提供的帳號資訊正確，輸入錯誤導致儲值失敗恕不負責。<br>
+      • 本服務遵守遊戲官方服務條款，禁止用於任何違規用途。<br>
+      • 如有任何疑問，請透過 LINE 官方帳號聯繫客服。
+    </div>
+  </div>
+
+  <div class="company-footer">
+    <strong>鼠來寶工作室</strong><br>
+    統一編號：60166866<br>
+    金流合作：藍新金流 NewebPay<br>
+    <br>
+    客服時間：每日 10:00 – 22:00
+  </div>
+</div>
+
 </body>
 </html>
