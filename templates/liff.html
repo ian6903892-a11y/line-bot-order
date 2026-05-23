@@ -545,7 +545,7 @@
             </div>
           </div>
           <div class="note-box">
-            ⚠️ 請務必選擇 <strong>${esc(info.usdtNetwork||'TRC20')}</strong> 網路轉帳，網路錯誤將導致資金損失。<br>
+            ⚠️ 請務必選擇 <strong>${esc(info.usdtNetwork||'BEP20')}</strong>（幣安鏈 BSC）網路轉帳，網路錯誤將導致資金損失！<br>
             轉帳備註請填寫訂單編號，確認收款後開始儲值。
           </div>` : `
           <div class="confirm-card">
@@ -587,8 +587,70 @@
   }
 
   function pickPay(t) {
+    if (t === 'USDT') {
+      showUsdtVerify();
+      return;
+    }
     sel.paymentType = t;
     render();
+  }
+
+  function showUsdtVerify() {
+    if (document.getElementById('usdtModal')) return;
+    const el = document.createElement('div');
+    el.id = 'usdtModal';
+    el.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:300;display:flex;align-items:center;justify-content:center;padding:24px;';
+    el.innerHTML = `
+      <div style="background:#fff;border-radius:20px;padding:28px 20px;width:100%;max-width:320px;box-shadow:0 8px 30px rgba(0,0,0,0.2);">
+        <div style="text-align:center;margin-bottom:20px;">
+          <div style="font-size:42px;margin-bottom:8px;">💎</div>
+          <div style="font-size:17px;font-weight:800;color:#222;">USDT 付款驗證</div>
+          <div style="font-size:12px;color:#999;margin-top:6px;line-height:1.6;">請輸入驗證碼以解鎖<br>USDT 加密貨幣付款</div>
+        </div>
+        <input id="usdtCode" class="form-input" type="text"
+          placeholder="請輸入驗證碼" autocomplete="off"
+          style="margin-bottom:8px;"
+          onkeydown="if(event.key==='Enter')confirmUsdtVerify()">
+        <div id="usdtErr" style="color:#FF4655;font-size:12px;margin-bottom:10px;min-height:16px;"></div>
+        <button class="btn-primary" onclick="confirmUsdtVerify()" style="margin-bottom:10px;">確認解鎖</button>
+        <button onclick="closeUsdtModal()"
+          style="width:100%;padding:12px;background:none;border:1.5px solid #eee;border-radius:12px;font-size:14px;font-weight:600;color:#999;cursor:pointer;">
+          取消
+        </button>
+      </div>`;
+    document.body.appendChild(el);
+    setTimeout(() => { const inp = document.getElementById('usdtCode'); if(inp) inp.focus(); }, 80);
+  }
+
+  async function confirmUsdtVerify() {
+    const codeEl = document.getElementById('usdtCode');
+    const errEl  = document.getElementById('usdtErr');
+    const code   = codeEl ? codeEl.value.trim() : '';
+    if (!code) { errEl.textContent = '請輸入驗證碼'; return; }
+    errEl.textContent = '驗證中...';
+    try {
+      const res  = await fetch('/api/verify_usdt', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ code })
+      });
+      const data = await res.json();
+      if (data.valid) {
+        closeUsdtModal();
+        sel.paymentType = 'USDT';
+        render();
+      } else {
+        errEl.textContent = data.msg || '驗證碼錯誤，請重新輸入';
+        if (codeEl) { codeEl.value = ''; codeEl.focus(); }
+      }
+    } catch(e) {
+      errEl.textContent = '網路錯誤，請重試';
+    }
+  }
+
+  function closeUsdtModal() {
+    const m = document.getElementById('usdtModal');
+    if (m) m.remove();
   }
 
   async function nextStep() {

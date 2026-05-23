@@ -221,6 +221,15 @@ def liff_page():
     liff_id = os.getenv('LIFF_ID', '')
     return render_template('liff.html', liff_id=liff_id)
 
+@app.route('/api/verify_usdt', methods=['POST'])
+def verify_usdt():
+    data     = request.get_json() or {}
+    code     = data.get('code', '').strip()
+    expected = os.getenv('USDT_VERIFY_CODE', '').strip()
+    if not expected:
+        return jsonify({'valid': False, 'msg': '驗證碼未設定，請聯繫客服'})
+    return jsonify({'valid': code == expected})
+
 @app.route('/api/liff_order', methods=['POST'])
 def liff_order():
     data = request.get_json()
