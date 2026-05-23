@@ -247,13 +247,27 @@ def liff_order():
     pending_orders[order_id] = order
     save_order(order)
 
-    return jsonify({
-        'orderId':     order_id,
-        'amount':      price,
-        'bankName':    os.getenv('BANK_NAME', '將來銀行'),
-        'bankCode':    os.getenv('BANK_CODE', '823'),
-        'bankAccount': os.getenv('BANK_ACCOUNT', ''),
-    })
+    payment_type = data.get('paymentType', 'BANK')
+    order['payment_method'] = 'USDT' if payment_type == 'USDT' else '無卡存款'
+
+    resp = {'orderId': order_id, 'amount': price, 'paymentType': payment_type}
+
+    if payment_type == 'USDT':
+        rate = float(os.getenv('USDT_RATE', '32'))
+        usdt_amount = round(price / rate, 2)
+        resp.update({
+            'usdtNetwork': os.getenv('USDT_NETWORK', 'TRC20'),
+            'usdtAddress': os.getenv('USDT_ADDRESS', ''),
+            'usdtAmount':  usdt_amount,
+        })
+    else:
+        resp.update({
+            'bankName':    os.getenv('BANK_NAME', '將來銀行'),
+            'bankCode':    os.getenv('BANK_CODE', '823'),
+            'bankAccount': os.getenv('BANK_ACCOUNT', ''),
+        })
+
+    return jsonify(resp)
 
 # ── LINE Bot 回覆 ─────────────────────────────────────
 def reply(token, text):

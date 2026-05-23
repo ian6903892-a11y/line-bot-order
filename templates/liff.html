@@ -115,20 +115,48 @@
       background: #fff;
       border: 2px solid #eee;
       border-radius: 14px;
-      padding: 18px 12px 14px;
+      padding: 14px 12px 12px;
       text-align: center;
       cursor: pointer;
       transition: all 0.15s;
       -webkit-tap-highlight-color: transparent;
     }
     .denom-card.selected {
-      border-color: #FF7043;
-      background: #FFF5F2;
-      box-shadow: 0 2px 10px rgba(255,112,67,0.25);
+      border-color: #FF4655;
+      background: linear-gradient(160deg, #fff5f5 0%, #fff 100%);
+      box-shadow: 0 2px 12px rgba(255,70,85,0.2);
+    }
+    .denom-badge {
+      display: inline-block;
+      background: linear-gradient(90deg, #FF4655, #FF7043);
+      color: #fff;
+      font-size: 8px; font-weight: 900;
+      letter-spacing: 1.5px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-bottom: 8px;
     }
     .denom-vp { font-size: 22px; font-weight: 800; color: #222; line-height: 1; }
     .denom-vp-unit { font-size: 11px; color: #aaa; margin: 4px 0 10px; }
     .denom-price { font-size: 16px; font-weight: 700; color: #FF7043; }
+
+    /* Payment method */
+    .pay-grid { display: flex; gap: 10px; margin-bottom: 4px; }
+    .pay-card {
+      flex: 1;
+      background: #fff;
+      border: 2px solid #eee;
+      border-radius: 14px;
+      padding: 16px 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .pay-card.selected { border-color: #FF7043; background: #FFF5F2; }
+    .pay-icon { font-size: 28px; margin-bottom: 6px; }
+    .pay-name { font-size: 13px; font-weight: 700; color: #333; }
+    .pay-desc { font-size: 10px; color: #aaa; margin-top: 3px; }
 
     /* Form */
     .form-group { margin-bottom: 18px; }
@@ -293,6 +321,7 @@
     loginPassword: '',
     riotId: '',
     carrier: '',
+    paymentType: 'BANK',   // 'BANK' = 無卡, 'USDT'
     bankInfo: null,
   };
   let userId = null;
@@ -354,8 +383,9 @@
           <div class="denom-grid">
             ${DENOMS.map((d, i) => `
               <div class="denom-card ${sel.denom===i?'selected':''}" onclick="pickDenom(${i})">
+                <div class="denom-badge">VALORANT</div>
                 <div class="denom-vp">${d.vp.toLocaleString()}</div>
-                <div class="denom-vp-unit">Valorant Points</div>
+                <div class="denom-vp-unit">特務幣 VP</div>
                 <div class="denom-price">NT$ ${d.price}</div>
               </div>`).join('')}
           </div>
@@ -408,6 +438,21 @@
               value="${esc(sel.carrier)}" autocomplete="off">
             <div class="form-hint">需要電子發票請填入手機條碼</div>
           </div>
+          <div class="form-group">
+            <label class="form-label">付款方式</label>
+            <div class="pay-grid">
+              <div class="pay-card ${sel.paymentType==='BANK'?'selected':''}" onclick="pickPay('BANK')">
+                <div class="pay-icon">🏧</div>
+                <div class="pay-name">無卡存款</div>
+                <div class="pay-desc">ATM / 臨櫃</div>
+              </div>
+              <div class="pay-card ${sel.paymentType==='USDT'?'selected':''}" onclick="pickPay('USDT')">
+                <div class="pay-icon">💎</div>
+                <div class="pay-name">USDT</div>
+                <div class="pay-desc">加密貨幣支付</div>
+              </div>
+            </div>
+          </div>
         </div>`;
       setTimeout(() => {
         const f = (id, cb) => { const el = document.getElementById(id); if(el) el.addEventListener('input', cb); };
@@ -448,6 +493,10 @@
               <span class="confirm-label">發票載具</span>
               <span class="confirm-value">${esc(sel.carrier)}</span>
             </div>` : ''}
+            <div class="confirm-row">
+              <span class="confirm-label">付款方式</span>
+              <span class="confirm-value">${sel.paymentType==='USDT'?'💎 USDT':'🏧 無卡存款'}</span>
+            </div>
             <div class="confirm-row confirm-total">
               <span class="confirm-label">應付金額</span>
               <span class="confirm-value">NT$ ${d.price}</span>
@@ -463,15 +512,44 @@
       btn.textContent = '關閉';
       btn.disabled = false;
       const info = sel.bankInfo || {};
+      const isUsdt = info.paymentType === 'USDT';
       c.innerHTML = `
         <div class="content">
           <div style="text-align:center;padding:24px 0 16px;">
             <div style="font-size:56px;margin-bottom:12px;">🎉</div>
             <div style="font-size:20px;font-weight:800;color:#333;margin-bottom:6px;">訂單建立成功！</div>
-            <div style="font-size:13px;color:#888;">請轉帳後等候儲值</div>
+            <div style="font-size:13px;color:#888;">請完成付款後等候儲值</div>
           </div>
+          ${isUsdt ? `
           <div class="confirm-card">
-            <div class="confirm-header">🏦 轉帳資訊</div>
+            <div class="confirm-header">💎 USDT 付款資訊</div>
+            <div class="confirm-row">
+              <span class="confirm-label">網路</span>
+              <span class="confirm-value" style="color:#FF7043;font-weight:800;">${esc(info.usdtNetwork||'TRC20')}</span>
+            </div>
+            <div class="confirm-row">
+              <span class="confirm-label">收款地址</span>
+              <span class="confirm-value" style="font-size:11px;word-break:break-all;">${esc(info.usdtAddress||'')}</span>
+            </div>
+            <div class="confirm-row confirm-total">
+              <span class="confirm-label">付款金額</span>
+              <span class="confirm-value">${info.usdtAmount||''} USDT</span>
+            </div>
+            <div class="confirm-row">
+              <span class="confirm-label">台幣參考</span>
+              <span class="confirm-value" style="color:#888;">NT$ ${info.amount||''}</span>
+            </div>
+            <div class="confirm-row">
+              <span class="confirm-label">訂單編號</span>
+              <span class="confirm-value" style="font-size:11px;">${esc(info.orderId||'')}</span>
+            </div>
+          </div>
+          <div class="note-box">
+            ⚠️ 請務必選擇 <strong>${esc(info.usdtNetwork||'TRC20')}</strong> 網路轉帳，網路錯誤將導致資金損失。<br>
+            轉帳備註請填寫訂單編號，確認收款後開始儲值。
+          </div>` : `
+          <div class="confirm-card">
+            <div class="confirm-header">🏧 無卡存款資訊</div>
             <div class="confirm-row">
               <span class="confirm-label">銀行</span>
               <span class="confirm-value">${esc(info.bankName||'')}（${esc(info.bankCode||'')}）</span>
@@ -481,7 +559,7 @@
               <span class="confirm-value" style="font-size:16px;font-weight:800;letter-spacing:1px;color:#FF7043;">${esc(info.bankAccount||'')}</span>
             </div>
             <div class="confirm-row confirm-total">
-              <span class="confirm-label">轉帳金額</span>
+              <span class="confirm-label">存款金額</span>
               <span class="confirm-value">NT$ ${info.amount||''}</span>
             </div>
             <div class="confirm-row">
@@ -490,9 +568,9 @@
             </div>
           </div>
           <div class="note-box">
-            💡 轉帳備註請填寫訂單編號，方便核對。<br>
-            確認收款後點數將發送至 <strong>${esc(sel.riotId)}</strong>
-          </div>
+            💡 至任何銀行 ATM 選擇「無卡存款」，輸入上方帳號存款。<br>
+            備註請填寫訂單編號，確認收款後開始儲值。
+          </div>`}
         </div>`;
     }
   }
@@ -504,7 +582,12 @@
 
   function pickLogin(t) {
     sel.loginType = t;
-    sel.loginPassword = ''; // 切換登入方式時清空密碼
+    sel.loginPassword = '';
+    render();
+  }
+
+  function pickPay(t) {
+    sel.paymentType = t;
     render();
   }
 
@@ -560,6 +643,7 @@
           loginAccount:  sel.loginAccount,
           loginPassword: sel.loginPassword,
           carrier:       sel.carrier,
+          paymentType:   sel.paymentType,
         })
       });
       const data = await res.json();
