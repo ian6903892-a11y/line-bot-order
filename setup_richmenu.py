@@ -70,7 +70,7 @@ menu_config = {
         },
         {
             "bounds": {"x": W//2, "y": 0, "width": W//2, "height": H},
-            "action": {"type": "message", "text": "下單"}
+            "action": {"type": "uri", "uri": f"https://liff.line.me/{os.getenv('LIFF_ID', '2010170038-RqcUvYpB')}"}
         }
     ]
 }

@@ -263,7 +263,7 @@ def start_order(uid, token):
         f'付款完成後點數將於 30 分鐘內到帳'
     )
 
-RICH_MENU_ID = 'richmenu-04e941cde00df3a70b41557345693cf6'
+RICH_MENU_ID = 'richmenu-7d5987ffaedc4085278467cfcd6099c9'
 
 def link_rich_menu(uid):
     try:
