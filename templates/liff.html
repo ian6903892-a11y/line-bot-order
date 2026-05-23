@@ -256,10 +256,19 @@
 <script>
   const LIFF_ID = '{{ liff_id }}';
   const DENOMS = [
-    { vp: 125,  price: 50  },
-    { vp: 420,  price: 165 },
-    { vp: 700,  price: 280 },
-    { vp: 1375, price: 535 },
+    { vp: 475,   price: 135  },
+    { vp: 1000,  price: 270  },
+    { vp: 2050,  price: 540  },
+    { vp: 3650,  price: 970  },
+    { vp: 5350,  price: 1330 },
+    { vp: 6350,  price: 1600 },
+    { vp: 7400,  price: 1870 },
+    { vp: 9000,  price: 2300 },
+    { vp: 11000, price: 2650 },
+    { vp: 13050, price: 3200 },
+    { vp: 16350, price: 3990 },
+    { vp: 22000, price: 5320 },
+    { vp: 33000, price: 7980 },
   ];
 
   let step = 1;
@@ -336,19 +345,6 @@
               autocomplete="off">
             <div class="form-hint">請輸入完整 Riot ID，需包含 # 符號與後面的 TAG</div>
           </div>
-          <div class="form-group">
-            <label class="form-label">付款方式</label>
-            <div class="pay-grid">
-              <div class="pay-card ${sel.payType==='CVS'?'selected':''}" onclick="pickPay('CVS')">
-                <div class="pay-icon">🏪</div>
-                <div class="pay-name">超商繳費</div>
-              </div>
-              <div class="pay-card ${sel.payType==='ATM'?'selected':''}" onclick="pickPay('ATM')">
-                <div class="pay-icon">🏦</div>
-                <div class="pay-name">ATM 轉帳</div>
-              </div>
-            </div>
-          </div>
         </div>`;
       setTimeout(() => {
         const inp = document.getElementById('riotInput');
@@ -357,7 +353,7 @@
 
     } else if (step === 3) {
       const d = DENOMS[sel.denom];
-      btn.textContent = '確認，前往付款 →';
+      btn.textContent = '確認下單 →';
       btn.disabled = false;
       c.innerHTML = `
         <div class="content">
@@ -377,7 +373,7 @@
             </div>
             <div class="confirm-row">
               <span class="confirm-label">付款方式</span>
-              <span class="confirm-value">${sel.payType==='CVS'?'超商繳費':'ATM 轉帳'}</span>
+              <span class="confirm-value">銀行轉帳</span>
             </div>
             <div class="confirm-row confirm-total">
               <span class="confirm-label">應付金額</span>
@@ -386,21 +382,43 @@
           </div>
           <div class="note-box">
             ⚠️ 請確認 Riot ID 正確無誤，儲值後無法退款。<br>
-            付款完成後點數將於 30 分鐘內發送。
+            轉帳完成後請稍候，點數將於確認後發送。
           </div>
         </div>`;
 
     } else if (step === 4) {
       btn.textContent = '關閉';
       btn.disabled = false;
+      const info = sel.bankInfo || {};
       c.innerHTML = `
-        <div class="success-wrap">
-          <div class="success-icon">🎉</div>
-          <div class="success-title">訂單建立成功！</div>
-          <div class="success-sub">
-            請依付款方式完成繳費<br>
-            點數將於 30 分鐘內發送至<br>
-            <strong style="color:#333">${esc(sel.riotId)}</strong>
+        <div class="content">
+          <div style="text-align:center;padding:24px 0 16px;">
+            <div style="font-size:56px;margin-bottom:12px;">🎉</div>
+            <div style="font-size:20px;font-weight:800;color:#333;margin-bottom:6px;">訂單建立成功！</div>
+            <div style="font-size:13px;color:#888;">請轉帳後等候點數發送</div>
+          </div>
+          <div class="confirm-card">
+            <div class="confirm-header">🏦 轉帳資訊</div>
+            <div class="confirm-row">
+              <span class="confirm-label">銀行</span>
+              <span class="confirm-value">${esc(info.bankName||'')}（${esc(info.bankCode||'')}）</span>
+            </div>
+            <div class="confirm-row">
+              <span class="confirm-label">帳號</span>
+              <span class="confirm-value" style="font-size:16px;font-weight:800;letter-spacing:1px;color:#FF7043;">${esc(info.bankAccount||'')}</span>
+            </div>
+            <div class="confirm-row confirm-total">
+              <span class="confirm-label">轉帳金額</span>
+              <span class="confirm-value">NT$ ${info.amount||''}</span>
+            </div>
+            <div class="confirm-row">
+              <span class="confirm-label">訂單編號</span>
+              <span class="confirm-value" style="font-size:12px;">${esc(info.orderId||'')}</span>
+            </div>
+          </div>
+          <div class="note-box">
+            💡 轉帳時請以訂單編號作為備註，方便我們核對。<br>
+            確認收款後點數將發送至 <strong>${esc(sel.riotId)}</strong>
           </div>
         </div>`;
     }
@@ -408,11 +426,6 @@
 
   function pickDenom(i) {
     sel.denom = i;
-    render();
-  }
-
-  function pickPay(t) {
-    sel.payType = t;
     render();
   }
 
@@ -450,25 +463,24 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId: userId,
-          game: 'VALORANT',
           vp: d.vp,
           price: d.price,
           riotId: sel.riotId,
-          paymentType: sel.payType
         })
       });
       const data = await res.json();
-      if (data.payUrl) {
-        window.location.href = data.payUrl;
+      if (data.orderId) {
+        sel.bankInfo = data;
+        setStep(4);
       } else {
         alert('建立失敗：' + (data.error || '未知錯誤'));
         btn.disabled = false;
-        btn.textContent = '確認，前往付款 →';
+        btn.textContent = '確認下單 →';
       }
     } catch(e) {
       alert('網路錯誤，請重試');
       btn.disabled = false;
-      btn.textContent = '確認，前往付款 →';
+      btn.textContent = '確認下單 →';
     }
   }
 

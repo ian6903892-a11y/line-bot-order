@@ -221,11 +221,10 @@ def liff_page():
 @app.route('/api/liff_order', methods=['POST'])
 def liff_order():
     data = request.get_json()
-    user_id      = data.get('userId') or 'unknown'
-    vp           = data.get('vp', 0)
-    price        = data.get('price', 0)
-    riot_id      = data.get('riotId', '')
-    payment_type = data.get('paymentType', 'CVS')
+    user_id  = data.get('userId') or 'unknown'
+    vp       = data.get('vp', 0)
+    price    = data.get('price', 0)
+    riot_id  = data.get('riotId', '')
 
     order_id = gen_order_id()
     order = {
@@ -235,14 +234,19 @@ def liff_order():
         'game_account':   riot_id,
         'quantity':       1,
         'total':          price,
-        'payment_method': '超商代碼' if payment_type == 'CVS' else 'ATM轉帳',
-        'payment_type':   payment_type,
+        'payment_method': '銀行轉帳',
+        'payment_type':   'BANK',
     }
     pending_orders[order_id] = order
     save_order(order)
 
-    base_url = os.getenv('BASE_URL', request.url_root.rstrip('/'))
-    return jsonify({'payUrl': f'{base_url}/pay/{order_id}', 'orderId': order_id})
+    return jsonify({
+        'orderId':     order_id,
+        'amount':      price,
+        'bankName':    os.getenv('BANK_NAME', '將來銀行'),
+        'bankCode':    os.getenv('BANK_CODE', '823'),
+        'bankAccount': os.getenv('BANK_ACCOUNT', ''),
+    })
 
 # ── LINE Bot 回覆 ─────────────────────────────────────
 def reply(token, text):
