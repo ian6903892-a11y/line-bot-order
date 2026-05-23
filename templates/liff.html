@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>喵喵儲值</title>
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+      color: #333;
+      min-height: 100vh;
+    }
+
+    .header {
+      background: #fff;
+      padding: 14px 16px;
+      text-align: center;
+      border-bottom: 1px solid #eee;
+    }
+    .header h1 { font-size: 15px; font-weight: 700; }
+
+    .steps {
+      display: flex;
+      align-items: center;
+      padding: 10px 16px;
+      background: #fff;
+      border-bottom: 1px solid #eee;
+    }
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+      position: relative;
+    }
+    .step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 13px;
+      left: 55%; right: -45%;
+      height: 2px;
+      background: #e0e0e0;
+      z-index: 0;
+    }
+    .step.done:not(:last-child)::after { background: #FF7043; }
+    .step-num {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: #e0e0e0;
+      color: #999;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700;
+      position: relative; z-index: 1;
+      transition: all 0.3s;
+    }
+    .step.active .step-num,
+    .step.done .step-num { background: #FF7043; color: #fff; }
+    .step-label { font-size: 10px; color: #aaa; margin-top: 3px; }
+    .step.active .step-label,
+    .step.done .step-label { color: #FF7043; font-weight: 600; }
+
+    .content { padding: 16px; padding-bottom: 96px; }
+
+    /* Valorant Banner */
+    .game-banner {
+      background: linear-gradient(160deg, #1a0a2e 0%, #0d1117 60%, #200010 100%);
+      border-radius: 16px;
+      padding: 28px 20px 24px;
+      margin-bottom: 20px;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+    .game-banner::before {
+      content: '';
+      position: absolute;
+      top: -20px; right: -20px;
+      width: 120px; height: 120px;
+      background: radial-gradient(circle, rgba(255,70,85,0.3) 0%, transparent 70%);
+    }
+    .game-badge {
+      background: rgba(255,70,85,0.9);
+      color: #fff;
+      font-size: 10px; font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-bottom: 10px;
+      letter-spacing: 1px;
+    }
+    .game-name { font-size: 26px; font-weight: 900; letter-spacing: 3px; }
+    .game-sub { font-size: 12px; color: rgba(255,255,255,0.55); margin-top: 4px; }
+    .vp-icon {
+      position: absolute;
+      right: 20px; top: 50%; transform: translateY(-50%);
+      font-size: 52px; opacity: 0.4;
+    }
+
+    /* Denominations */
+    .section-title {
+      font-size: 12px; font-weight: 700; color: #888;
+      text-transform: uppercase; letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+    .denom-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+    .denom-card {
+      background: #fff;
+      border: 2px solid #eee;
+      border-radius: 14px;
+      padding: 18px 12px 14px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .denom-card.selected {
+      border-color: #FF7043;
+      background: #FFF5F2;
+      box-shadow: 0 2px 10px rgba(255,112,67,0.25);
+    }
+    .denom-vp { font-size: 22px; font-weight: 800; color: #222; line-height: 1; }
+    .denom-vp-unit { font-size: 11px; color: #aaa; margin: 4px 0 10px; }
+    .denom-price { font-size: 16px; font-weight: 700; color: #FF7043; }
+
+    /* Form */
+    .form-group { margin-bottom: 18px; }
+    .form-label {
+      font-size: 12px; font-weight: 700; color: #666;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      margin-bottom: 8px; display: block;
+    }
+    .form-input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid #eee;
+      border-radius: 12px;
+      font-size: 16px;
+      outline: none;
+      background: #fff;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+    }
+    .form-input:focus { border-color: #FF7043; }
+    .form-hint { font-size: 11px; color: #aaa; margin-top: 6px; line-height: 1.5; }
+
+    /* Payment selection */
+    .pay-grid { display: flex; gap: 10px; }
+    .pay-card {
+      flex: 1;
+      background: #fff;
+      border: 2px solid #eee;
+      border-radius: 14px;
+      padding: 16px 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .pay-card.selected { border-color: #FF7043; background: #FFF5F2; }
+    .pay-icon { font-size: 28px; margin-bottom: 6px; }
+    .pay-name { font-size: 13px; font-weight: 700; color: #333; }
+
+    /* Confirm */
+    .confirm-card {
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .confirm-header {
+      background: linear-gradient(90deg, #FF7043, #FF4655);
+      padding: 14px 20px;
+      color: #fff;
+      font-size: 14px; font-weight: 700;
+    }
+    .confirm-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 13px 20px;
+      border-bottom: 1px solid #f5f5f5;
+    }
+    .confirm-row:last-child { border-bottom: none; }
+    .confirm-label { font-size: 13px; color: #999; }
+    .confirm-value { font-size: 13px; font-weight: 600; color: #333; max-width: 58%; text-align: right; word-break: break-all; }
+    .confirm-total { background: #FFF5F2; }
+    .confirm-total .confirm-value { font-size: 22px; color: #FF7043; }
+
+    .note-box {
+      background: #fff8e1;
+      border-left: 4px solid #FFB300;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 12px; color: #7a5c00;
+      line-height: 1.6;
+    }
+
+    /* Bottom button */
+    .bottom-btn {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      padding: 12px 16px 16px;
+      background: #fff;
+      border-top: 1px solid #eee;
+      z-index: 100;
+    }
+    .btn-primary {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(90deg, #FF7043, #FF4655);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px; font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 1px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-primary:disabled { background: #ccc; cursor: default; }
+
+    /* Success */
+    .success-wrap { text-align: center; padding: 50px 24px; }
+    .success-icon { font-size: 80px; margin-bottom: 20px; }
+    .success-title { font-size: 22px; font-weight: 800; color: #333; margin-bottom: 10px; }
+    .success-sub { font-size: 14px; color: #888; line-height: 1.8; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🐱 喵喵儲值｜快速下單</h1>
+</div>
+
+<div class="steps">
+  <div class="step active" id="s1"><div class="step-num">1</div><div class="step-label">選面額</div></div>
+  <div class="step" id="s2"><div class="step-num">2</div><div class="step-label">填資料</div></div>
+  <div class="step" id="s3"><div class="step-num">3</div><div class="step-label">確認</div></div>
+  <div class="step" id="s4"><div class="step-num">4</div><div class="step-label">付款</div></div>
+</div>
+
+<div id="pageContent"></div>
+
+<div class="bottom-btn">
+  <button class="btn-primary" id="mainBtn" onclick="nextStep()">下一步</button>
+</div>
+
+<script>
+  const LIFF_ID = '{{ liff_id }}';
+  const DENOMS = [
+    { vp: 125,  price: 50  },
+    { vp: 420,  price: 165 },
+    { vp: 700,  price: 280 },
+    { vp: 1375, price: 535 },
+  ];
+
+  let step = 1;
+  let sel = { denom: null, riotId: '', payType: 'CVS' };
+  let userId = null;
+
+  async function init() {
+    try {
+      if (LIFF_ID && LIFF_ID !== '') {
+        await liff.init({ liffId: LIFF_ID });
+        if (liff.isLoggedIn()) {
+          const p = await liff.getProfile();
+          userId = p.userId;
+        }
+      }
+    } catch(e) {}
+    render();
+  }
+
+  function setStep(n) {
+    step = n;
+    render();
+    window.scrollTo(0, 0);
+  }
+
+  function esc(s) {
+    return String(s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function render() {
+    ['s1','s2','s3','s4'].forEach((id, i) => {
+      const n = i + 1;
+      document.getElementById(id).className =
+        'step' + (n < step ? ' done' : n === step ? ' active' : '');
+    });
+
+    const btn = document.getElementById('mainBtn');
+    const c = document.getElementById('pageContent');
+
+    if (step === 1) {
+      btn.textContent = '下一步 →';
+      btn.disabled = sel.denom === null;
+      c.innerHTML = `
+        <div class="content">
+          <div class="game-banner">
+            <div class="game-badge">RIOT GAMES</div>
+            <div class="game-name">VALORANT</div>
+            <div class="game-sub">特戰英豪 · VP 點數儲值</div>
+            <div class="vp-icon">💎</div>
+          </div>
+          <div class="section-title">選擇面額</div>
+          <div class="denom-grid">
+            ${DENOMS.map((d, i) => `
+              <div class="denom-card ${sel.denom===i?'selected':''}" onclick="pickDenom(${i})">
+                <div class="denom-vp">${d.vp.toLocaleString()}</div>
+                <div class="denom-vp-unit">Valorant Points</div>
+                <div class="denom-price">NT$ ${d.price}</div>
+              </div>`).join('')}
+          </div>
+        </div>`;
+
+    } else if (step === 2) {
+      btn.textContent = '下一步 →';
+      btn.disabled = false;
+      c.innerHTML = `
+        <div class="content">
+          <div class="form-group">
+            <label class="form-label">Riot ID（遊戲帳號）</label>
+            <input class="form-input" id="riotInput" type="text"
+              placeholder="例如：Meow#TW1"
+              value="${esc(sel.riotId)}"
+              autocomplete="off">
+            <div class="form-hint">請輸入完整 Riot ID，需包含 # 符號與後面的 TAG</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">付款方式</label>
+            <div class="pay-grid">
+              <div class="pay-card ${sel.payType==='CVS'?'selected':''}" onclick="pickPay('CVS')">
+                <div class="pay-icon">🏪</div>
+                <div class="pay-name">超商繳費</div>
+              </div>
+              <div class="pay-card ${sel.payType==='ATM'?'selected':''}" onclick="pickPay('ATM')">
+                <div class="pay-icon">🏦</div>
+                <div class="pay-name">ATM 轉帳</div>
+              </div>
+            </div>
+          </div>
+        </div>`;
+      setTimeout(() => {
+        const inp = document.getElementById('riotInput');
+        if (inp) inp.addEventListener('input', () => { sel.riotId = inp.value; });
+      }, 0);
+
+    } else if (step === 3) {
+      const d = DENOMS[sel.denom];
+      btn.textContent = '確認，前往付款 →';
+      btn.disabled = false;
+      c.innerHTML = `
+        <div class="content">
+          <div class="confirm-card">
+            <div class="confirm-header">📋 訂單確認</div>
+            <div class="confirm-row">
+              <span class="confirm-label">遊戲</span>
+              <span class="confirm-value">VALORANT 特戰英豪</span>
+            </div>
+            <div class="confirm-row">
+              <span class="confirm-label">儲值點數</span>
+              <span class="confirm-value">${d.vp.toLocaleString()} VP</span>
+            </div>
+            <div class="confirm-row">
+              <span class="confirm-label">Riot ID</span>
+              <span class="confirm-value">${esc(sel.riotId)}</span>
+            </div>
+            <div class="confirm-row">
+              <span class="confirm-label">付款方式</span>
+              <span class="confirm-value">${sel.payType==='CVS'?'超商繳費':'ATM 轉帳'}</span>
+            </div>
+            <div class="confirm-row confirm-total">
+              <span class="confirm-label">應付金額</span>
+              <span class="confirm-value">NT$ ${d.price}</span>
+            </div>
+          </div>
+          <div class="note-box">
+            ⚠️ 請確認 Riot ID 正確無誤，儲值後無法退款。<br>
+            付款完成後點數將於 30 分鐘內發送。
+          </div>
+        </div>`;
+
+    } else if (step === 4) {
+      btn.textContent = '關閉';
+      btn.disabled = false;
+      c.innerHTML = `
+        <div class="success-wrap">
+          <div class="success-icon">🎉</div>
+          <div class="success-title">訂單建立成功！</div>
+          <div class="success-sub">
+            請依付款方式完成繳費<br>
+            點數將於 30 分鐘內發送至<br>
+            <strong style="color:#333">${esc(sel.riotId)}</strong>
+          </div>
+        </div>`;
+    }
+  }
+
+  function pickDenom(i) {
+    sel.denom = i;
+    render();
+  }
+
+  function pickPay(t) {
+    sel.payType = t;
+    render();
+  }
+
+  async function nextStep() {
+    if (step === 1) {
+      if (sel.denom === null) return;
+      setStep(2);
+
+    } else if (step === 2) {
+      const inp = document.getElementById('riotInput');
+      if (inp) sel.riotId = inp.value.trim();
+      if (!sel.riotId) { alert('請填寫 Riot ID'); return; }
+      if (!sel.riotId.includes('#')) {
+        alert('Riot ID 格式不對，請包含 # 符號\n例如：Meow#TW1');
+        return;
+      }
+      setStep(3);
+
+    } else if (step === 3) {
+      await submitOrder();
+
+    } else {
+      try { liff.closeWindow(); } catch(e) {}
+    }
+  }
+
+  async function submitOrder() {
+    const btn = document.getElementById('mainBtn');
+    btn.disabled = true;
+    btn.textContent = '建立訂單中...';
+    try {
+      const d = DENOMS[sel.denom];
+      const res = await fetch('/api/liff_order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: userId,
+          game: 'VALORANT',
+          vp: d.vp,
+          price: d.price,
+          riotId: sel.riotId,
+          paymentType: sel.payType
+        })
+      });
+      const data = await res.json();
+      if (data.payUrl) {
+        window.location.href = data.payUrl;
+      } else {
+        alert('建立失敗：' + (data.error || '未知錯誤'));
+        btn.disabled = false;
+        btn.textContent = '確認，前往付款 →';
+      }
+    } catch(e) {
+      alert('網路錯誤，請重試');
+      btn.disabled = false;
+      btn.textContent = '確認，前往付款 →';
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>

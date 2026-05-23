@@ -1,0 +1,26 @@
+# 敏感資料（絕對不能上傳）
+.env
+google_credentials.json
+
+# Python 暫存
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# 虛擬環境
+venv/
+env/
+.venv/
+
+# 本機工具
+ngrok.exe
+richmenu.png
+
+# 系統檔
+.DS_Store
+Thumbs.db

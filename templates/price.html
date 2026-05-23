@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>喵喵儲值 - 價目表</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+      min-height: 100vh;
+    }
+    .header {
+      background: linear-gradient(135deg, #1a0a2e 0%, #0d1117 100%);
+      padding: 28px 20px 24px;
+      text-align: center;
+      color: #fff;
+    }
+    .header-badge {
+      background: rgba(255,70,85,0.9);
+      color: #fff;
+      font-size: 11px; font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-bottom: 10px;
+      letter-spacing: 1px;
+    }
+    .header h1 { font-size: 26px; font-weight: 900; letter-spacing: 3px; margin-bottom: 4px; }
+    .header p { font-size: 13px; color: rgba(255,255,255,0.6); }
+
+    .notice {
+      background: #fff8e1;
+      border-left: 4px solid #FFB300;
+      margin: 16px;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 13px;
+      color: #7a5c00;
+      line-height: 1.6;
+    }
+
+    .section { padding: 0 16px 8px; }
+    .section-title {
+      font-size: 12px; font-weight: 700; color: #888;
+      text-transform: uppercase; letter-spacing: 1px;
+      margin: 16px 0 10px;
+    }
+
+    .price-card {
+      background: #fff;
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      display: flex;
+      align-items: center;
+    }
+    .price-badge {
+      background: linear-gradient(160deg, #1a0a2e, #200010);
+      color: #fff;
+      width: 90px;
+      padding: 20px 10px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .price-vp { font-size: 20px; font-weight: 800; line-height: 1; }
+    .price-vp-unit { font-size: 10px; color: rgba(255,255,255,0.6); margin-top: 3px; }
+    .price-info { padding: 16px; flex: 1; }
+    .price-name { font-size: 14px; font-weight: 700; color: #222; margin-bottom: 2px; }
+    .price-desc { font-size: 12px; color: #999; }
+    .price-amount {
+      padding: 16px 16px 16px 0;
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .price-nt { font-size: 18px; font-weight: 800; color: #FF7043; }
+    .price-nt-unit { font-size: 11px; color: #aaa; }
+
+    .order-btn {
+      display: block;
+      margin: 16px;
+      padding: 16px;
+      background: linear-gradient(90deg, #FF7043, #FF4655);
+      color: #fff;
+      text-align: center;
+      border-radius: 14px;
+      font-size: 16px; font-weight: 700;
+      text-decoration: none;
+      letter-spacing: 1px;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 16px;
+      font-size: 11px;
+      color: #bbb;
+      padding-bottom: 32px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-badge">RIOT GAMES</div>
+  <h1>VALORANT</h1>
+  <p>喵喵儲值 · 官方授權儲值服務</p>
+</div>
+
+<div class="section">
+  <div class="notice">
+    ⚡ 付款完成後 <strong>30 分鐘內</strong>發送到帳<br>
+    ✅ 請確認 Riot ID 正確，儲值後無法退款
+  </div>
+
+  <div class="section-title">Valorant Points 價目表</div>
+
+  <div class="price-card">
+    <div class="price-badge">
+      <div class="price-vp">125</div>
+      <div class="price-vp-unit">VP</div>
+    </div>
+    <div class="price-info">
+      <div class="price-name">入門包</div>
+      <div class="price-desc">適合補齊點數</div>
+    </div>
+    <div class="price-amount">
+      <div class="price-nt">$50</div>
+      <div class="price-nt-unit">新台幣</div>
+    </div>
+  </div>
+
+  <div class="price-card">
+    <div class="price-badge">
+      <div class="price-vp">420</div>
+      <div class="price-vp-unit">VP</div>
+    </div>
+    <div class="price-info">
+      <div class="price-name">小額包</div>
+      <div class="price-desc">購買單件武器皮膚</div>
+    </div>
+    <div class="price-amount">
+      <div class="price-nt">$165</div>
+      <div class="price-nt-unit">新台幣</div>
+    </div>
+  </div>
+
+  <div class="price-card">
+    <div class="price-badge" style="background: linear-gradient(160deg, #FF4655, #a00010);">
+      <div class="price-vp">700</div>
+      <div class="price-vp-unit">VP</div>
+    </div>
+    <div class="price-info">
+      <div class="price-name">標準包 🔥</div>
+      <div class="price-desc">最多人購買</div>
+    </div>
+    <div class="price-amount">
+      <div class="price-nt">$280</div>
+      <div class="price-nt-unit">新台幣</div>
+    </div>
+  </div>
+
+  <div class="price-card">
+    <div class="price-badge" style="background: linear-gradient(160deg, #7B1FA2, #4A0072);">
+      <div class="price-vp">1375</div>
+      <div class="price-vp-unit">VP</div>
+    </div>
+    <div class="price-info">
+      <div class="price-name">大包裝 💎</div>
+      <div class="price-desc">整套外觀首選</div>
+    </div>
+    <div class="price-amount">
+      <div class="price-nt">$535</div>
+      <div class="price-nt-unit">新台幣</div>
+    </div>
+  </div>
+</div>
+
+<a class="order-btn" href="{{ order_url }}">立即儲值 →</a>
+
+<div class="footer">
+  喵喵儲值 · 24小時全年無休<br>
+  如有問題請直接在 LINE 聯繫客服
+</div>
+
+</body>
+</html>
