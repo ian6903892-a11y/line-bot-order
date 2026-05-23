@@ -47,7 +47,7 @@ states = {}
 pending_orders = {}
 
 # ── Google 試算表 ─────────────────────────────────────
-SHEET_HEADERS = ['訂單編號', '時間', '用戶ID', '商品', '遊戲帳號', '數量', '金額', '付款方式', '付款代碼', '狀態']
+SHEET_HEADERS = ['訂單編號', '時間', '用戶ID', '商品', 'Riot ID', '登入方式', '帳號', '密碼', '載具', '數量', '金額', '付款方式', '狀態']
 
 def get_sheet():
     creds = Credentials.from_service_account_file(
@@ -75,10 +75,13 @@ def save_order(order):
             order['user_id'],
             order['product'],
             order['game_account'],
+            order.get('login_type', ''),
+            order.get('login_account', ''),
+            order.get('login_password', ''),
+            order.get('carrier', ''),
             order['quantity'],
             order['total'],
             order['payment_method'],
-            order.get('payment_code', ''),
             '待付款',
         ])
     except Exception as e:
@@ -232,6 +235,10 @@ def liff_order():
         'user_id':        user_id,
         'product':        f'VALORANT {vp}VP',
         'game_account':   riot_id,
+        'login_type':     data.get('loginType', ''),
+        'login_account':  data.get('loginAccount', ''),
+        'login_password': data.get('loginPassword', ''),
+        'carrier':        data.get('carrier', ''),
         'quantity':       1,
         'total':          price,
         'payment_method': '銀行轉帳',

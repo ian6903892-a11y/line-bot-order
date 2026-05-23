@@ -152,21 +152,35 @@
     .form-hint { font-size: 11px; color: #aaa; margin-top: 6px; line-height: 1.5; }
 
     /* Payment selection */
-    .pay-grid { display: flex; gap: 10px; }
-    .pay-card {
-      flex: 1;
+    /* Login method */
+    .login-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+    .login-card {
       background: #fff;
       border: 2px solid #eee;
       border-radius: 14px;
-      padding: 16px 8px;
+      padding: 14px 8px;
       text-align: center;
       cursor: pointer;
       transition: all 0.15s;
       -webkit-tap-highlight-color: transparent;
     }
-    .pay-card.selected { border-color: #FF7043; background: #FFF5F2; }
-    .pay-icon { font-size: 28px; margin-bottom: 6px; }
-    .pay-name { font-size: 13px; font-weight: 700; color: #333; }
+    .login-card.selected { border-color: #FF7043; background: #FFF5F2; box-shadow: 0 2px 10px rgba(255,112,67,0.2); }
+    .login-icon { font-size: 28px; margin-bottom: 5px; }
+    .login-name { font-size: 13px; font-weight: 700; color: #333; }
+    .cred-box {
+      background: #fff;
+      border: 1.5px solid #FF7043;
+      border-radius: 14px;
+      padding: 16px;
+      margin-top: 4px;
+      margin-bottom: 4px;
+    }
+    .cred-box .form-group:last-child { margin-bottom: 0; }
 
     /* Confirm */
     .confirm-card {
@@ -242,7 +256,7 @@
 
 <div class="steps">
   <div class="step active" id="s1"><div class="step-num">1</div><div class="step-label">選面額</div></div>
-  <div class="step" id="s2"><div class="step-num">2</div><div class="step-label">填資料</div></div>
+  <div class="step" id="s2"><div class="step-num">2</div><div class="step-label">帳號資料</div></div>
   <div class="step" id="s3"><div class="step-num">3</div><div class="step-label">確認</div></div>
   <div class="step" id="s4"><div class="step-num">4</div><div class="step-label">付款</div></div>
 </div>
@@ -272,8 +286,23 @@
   ];
 
   let step = 1;
-  let sel = { denom: null, riotId: '', payType: 'CVS' };
+  let sel = {
+    denom: null,
+    loginType: '',
+    loginAccount: '',
+    loginPassword: '',
+    riotId: '',
+    carrier: '',
+    bankInfo: null,
+  };
   let userId = null;
+
+  const LOGIN_TYPES = [
+    { id: 'riot',     icon: '⚔️', name: 'Riot',     accLabel: '帳號',     accPlaceholder: 'Riot 帳號（英文）' },
+    { id: 'google',   icon: '🔵', name: 'Google',   accLabel: 'Gmail',    accPlaceholder: 'example@gmail.com' },
+    { id: 'facebook', icon: '📘', name: 'Facebook', accLabel: '帳號/Email', accPlaceholder: 'Facebook 帳號或 Email' },
+    { id: 'apple',    icon: '🍎', name: 'Apple',    accLabel: 'Apple ID',  accPlaceholder: 'example@icloud.com' },
+  ];
 
   async function init() {
     try {
@@ -333,36 +362,71 @@
         </div>`;
 
     } else if (step === 2) {
+      const lt = LOGIN_TYPES.find(l => l.id === sel.loginType);
       btn.textContent = '下一步 →';
       btn.disabled = false;
       c.innerHTML = `
         <div class="content">
           <div class="form-group">
-            <label class="form-label">Riot ID（遊戲帳號）</label>
+            <label class="form-label">遊戲帳號登入方式</label>
+            <div class="login-grid">
+              ${LOGIN_TYPES.map(l => `
+                <div class="login-card ${sel.loginType===l.id?'selected':''}" onclick="pickLogin('${l.id}')">
+                  <div class="login-icon">${l.icon}</div>
+                  <div class="login-name">${l.name}</div>
+                </div>`).join('')}
+            </div>
+          </div>
+          ${lt ? `
+          <div class="cred-box">
+            <div class="form-group">
+              <label class="form-label">${lt.accLabel}</label>
+              <input class="form-input" id="credAccount" type="text"
+                placeholder="${lt.accPlaceholder}"
+                value="${esc(sel.loginAccount)}" autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label class="form-label">密碼</label>
+              <input class="form-input" id="credPassword" type="password"
+                placeholder="登入密碼" autocomplete="off">
+            </div>
+          </div>` : `
+          <div class="note-box" style="margin-bottom:16px;">
+            👆 請先選擇您的登入方式
+          </div>`}
+          <div class="form-group">
+            <label class="form-label">Riot ID</label>
             <input class="form-input" id="riotInput" type="text"
               placeholder="例如：Meow#TW1"
-              value="${esc(sel.riotId)}"
-              autocomplete="off">
-            <div class="form-hint">請輸入完整 Riot ID，需包含 # 符號與後面的 TAG</div>
+              value="${esc(sel.riotId)}" autocomplete="off">
+            <div class="form-hint">請輸入完整 Riot ID，需包含 # 符號</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">電子發票載具 <span style="font-weight:400;color:#aaa">（選填）</span></label>
+            <input class="form-input" id="carrierInput" type="text"
+              placeholder="/XXXXXXX（手機條碼）"
+              value="${esc(sel.carrier)}" autocomplete="off">
+            <div class="form-hint">需要電子發票請填入手機條碼</div>
           </div>
         </div>`;
       setTimeout(() => {
-        const inp = document.getElementById('riotInput');
-        if (inp) inp.addEventListener('input', () => { sel.riotId = inp.value; });
+        const f = (id, cb) => { const el = document.getElementById(id); if(el) el.addEventListener('input', cb); };
+        f('credAccount',  () => { sel.loginAccount  = document.getElementById('credAccount').value; });
+        f('credPassword', () => { sel.loginPassword = document.getElementById('credPassword').value; });
+        f('riotInput',    () => { sel.riotId        = document.getElementById('riotInput').value; });
+        f('carrierInput', () => { sel.carrier       = document.getElementById('carrierInput').value; });
+        // 顯示已有密碼（password 欄位不預填，讓使用者重新輸入）
       }, 0);
 
     } else if (step === 3) {
       const d = DENOMS[sel.denom];
+      const ltName = (LOGIN_TYPES.find(l => l.id === sel.loginType)||{}).name || sel.loginType;
       btn.textContent = '確認下單 →';
       btn.disabled = false;
       c.innerHTML = `
         <div class="content">
           <div class="confirm-card">
             <div class="confirm-header">📋 訂單確認</div>
-            <div class="confirm-row">
-              <span class="confirm-label">遊戲</span>
-              <span class="confirm-value">VALORANT 特戰英豪</span>
-            </div>
             <div class="confirm-row">
               <span class="confirm-label">儲值點數</span>
               <span class="confirm-value">${d.vp.toLocaleString()} VP</span>
@@ -372,17 +436,26 @@
               <span class="confirm-value">${esc(sel.riotId)}</span>
             </div>
             <div class="confirm-row">
-              <span class="confirm-label">付款方式</span>
-              <span class="confirm-value">銀行轉帳</span>
+              <span class="confirm-label">登入方式</span>
+              <span class="confirm-value">${esc(ltName)}</span>
             </div>
+            <div class="confirm-row">
+              <span class="confirm-label">帳號</span>
+              <span class="confirm-value">${esc(sel.loginAccount)}</span>
+            </div>
+            ${sel.carrier ? `
+            <div class="confirm-row">
+              <span class="confirm-label">發票載具</span>
+              <span class="confirm-value">${esc(sel.carrier)}</span>
+            </div>` : ''}
             <div class="confirm-row confirm-total">
               <span class="confirm-label">應付金額</span>
               <span class="confirm-value">NT$ ${d.price}</span>
             </div>
           </div>
           <div class="note-box">
-            ⚠️ 請確認 Riot ID 正確無誤，儲值後無法退款。<br>
-            轉帳完成後請稍候，點數將於確認後發送。
+            ⚠️ 請確認帳號密碼及 Riot ID 正確無誤，上號完成後無法退款。<br>
+            我們會在收款後盡快完成儲值。
           </div>
         </div>`;
 
@@ -395,7 +468,7 @@
           <div style="text-align:center;padding:24px 0 16px;">
             <div style="font-size:56px;margin-bottom:12px;">🎉</div>
             <div style="font-size:20px;font-weight:800;color:#333;margin-bottom:6px;">訂單建立成功！</div>
-            <div style="font-size:13px;color:#888;">請轉帳後等候點數發送</div>
+            <div style="font-size:13px;color:#888;">請轉帳後等候儲值</div>
           </div>
           <div class="confirm-card">
             <div class="confirm-header">🏦 轉帳資訊</div>
@@ -417,7 +490,7 @@
             </div>
           </div>
           <div class="note-box">
-            💡 轉帳時請以訂單編號作為備註，方便我們核對。<br>
+            💡 轉帳備註請填寫訂單編號，方便核對。<br>
             確認收款後點數將發送至 <strong>${esc(sel.riotId)}</strong>
           </div>
         </div>`;
@@ -429,15 +502,32 @@
     render();
   }
 
+  function pickLogin(t) {
+    sel.loginType = t;
+    sel.loginPassword = ''; // 切換登入方式時清空密碼
+    render();
+  }
+
   async function nextStep() {
     if (step === 1) {
       if (sel.denom === null) return;
       setStep(2);
 
     } else if (step === 2) {
-      const inp = document.getElementById('riotInput');
-      if (inp) sel.riotId = inp.value.trim();
-      if (!sel.riotId) { alert('請填寫 Riot ID'); return; }
+      // 收集欄位值
+      const ga = document.getElementById('credAccount');
+      const gp = document.getElementById('credPassword');
+      const ri = document.getElementById('riotInput');
+      const ca = document.getElementById('carrierInput');
+      if (ga) sel.loginAccount  = ga.value.trim();
+      if (gp) sel.loginPassword = gp.value;
+      if (ri) sel.riotId        = ri.value.trim();
+      if (ca) sel.carrier       = ca.value.trim();
+
+      if (!sel.loginType)     { alert('請選擇登入方式');                return; }
+      if (!sel.loginAccount)  { alert('請填寫帳號');                    return; }
+      if (!sel.loginPassword) { alert('請填寫密碼');                    return; }
+      if (!sel.riotId)        { alert('請填寫 Riot ID');               return; }
       if (!sel.riotId.includes('#')) {
         alert('Riot ID 格式不對，請包含 # 符號\n例如：Meow#TW1');
         return;
@@ -462,10 +552,14 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId: userId,
-          vp: d.vp,
-          price: d.price,
-          riotId: sel.riotId,
+          userId:        userId,
+          vp:            d.vp,
+          price:         d.price,
+          riotId:        sel.riotId,
+          loginType:     sel.loginType,
+          loginAccount:  sel.loginAccount,
+          loginPassword: sel.loginPassword,
+          carrier:       sel.carrier,
         })
       });
       const data = await res.json();
