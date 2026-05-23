@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: line-bot-order
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: LINE_CHANNEL_ACCESS_TOKEN
+        sync: false
+      - key: LINE_CHANNEL_SECRET
+        sync: false
+      - key: NEWEBPAY_MERCHANT_ID
+        sync: false
+      - key: NEWEBPAY_HASH_KEY
+        sync: false
+      - key: NEWEBPAY_HASH_IV
+        sync: false
+      - key: NEWEBPAY_URL
+        value: https://core.newebpay.com/MPG/mpg_gateway
+      - key: LIFF_ID
+        value: 2010170038-RqcUvYpB
+      - key: BASE_URL
+        sync: false
+      - key: GOOGLE_SHEET_ID
+        sync: false
